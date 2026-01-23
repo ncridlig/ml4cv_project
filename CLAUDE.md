@@ -70,26 +70,28 @@ Real-time capable: 60 fps requires < 16.7 ms per frame
 
 ## Dataset
 
-### Primary Dataset (Gabriele's recommendation)
+### CORRECT Dataset (from thesis training notebook)
 - **Source:** Roboflow
-- **Workspace:** `fsbdriverless`
-- **Project:** `cone-detector-zruok`
-- **Version:** 1
-- **Size:** 22,725 images (Train: 19,884 | Valid: 1,893 | Test: 948)
-- **API:** Sign up free at [roboflow.com](https://roboflow.com), get API key from settings
+- **Workspace:** `fmdv`
+- **Project:** `fsoco-kxq3s`
+- **Version:** 12
+- **Download script:** `python download_fsoco.py`
 
 ```python
-# Download dataset
-!pip install roboflow
+# Download dataset (same as thesis)
 from roboflow import Roboflow
 rf = Roboflow(api_key="YOUR_API_KEY")
-project = rf.workspace("fsbdriverless").project("cone-detector-zruok")
-version = project.version(1)
+project = rf.workspace("fmdv").project("fsoco-kxq3s")
+version = project.version(12)
 dataset = version.download("yolov11")
 ```
 
-### Alternative (used in existing notebook)
-- FSOCO-12 from workspace `fmdv` (same FSOCO data, different version)
+### WRONG Dataset (do NOT use)
+- **Workspace:** `fsbdriverless`
+- **Project:** `cone-detector-zruok`
+- **Version:** 1
+- **Size:** 22,725 images
+- **Problem:** Training on this dataset plateaus at mAP50 ≈ 0.68, far below thesis baseline (0.824)
 
 ---
 
@@ -233,38 +235,78 @@ trtexec --onnx=best.onnx --fp16 --saveEngine=best.engine
 | Date | Duration | Work Done |
 |------|----------|-----------|
 | 2026-01-21 | ~1.5 hrs | Project setup: cloned repos, downloaded dataset (22,725 images), created venv, wrote CLAUDE.md, IMPROVEMENT_TARGETS.md, extracted baseline metrics from Edo's thesis |
+| 2026-01-23 | ~1 hr | Discovered dataset mismatch via W&B monitoring (training plateaued at mAP50=0.68 vs expected 0.824). Created `wandb_api.py` and `download_fsoco.py`. Identified correct dataset: `fmdv/fsoco-kxq3s` version 12. |
 
 ---
 
-## Session Status (Last Updated: 2026-01-21)
+## Session Status (Last Updated: 2026-01-23)
+
+### Critical Discovery (2026-01-23)
+**The current training run is using the WRONG dataset.**
+
+| | Thesis (correct) | Current run (wrong) |
+|---|---|---|
+| Workspace | `fmdv` | `fsbdriverless` |
+| Project | `fsoco-kxq3s` | `cone-detector-zruok` |
+| Version | 12 | 1 |
+| Expected mAP50 | ~0.824 | Plateaued at ~0.68 |
+
+The current training run (`yolov11n_300ep_baseline8`) will NOT match thesis baseline. It must be restarted with the correct dataset.
+
+### W&B Monitoring
+Use `wandb_api.py` to check training progress:
+```bash
+python wandb_api.py ncridlig-ml4cv/runs-baseline/<RUN_ID> --all
+```
+
+---
+
+## TASKS FOR UBUNTU WORKSTATION
+
+### Immediate Actions (do these now)
+
+1. **Stop the current training run** (it's using the wrong dataset)
+
+2. **Create .env file with API key:**
+   ```bash
+   echo "ROBOFLOW_API_KEY=jm1EGrJnS6cmTQfcBeBs" > .env
+   ```
+
+3. **Download the CORRECT dataset:**
+   ```bash
+   pip install roboflow
+   python download_fsoco.py
+   ```
+
+4. **Start new baseline training with correct dataset:**
+   ```bash
+   yolo train model=yolo11n.pt data=datasets/fsoco-kxq3s-12/data.yaml epochs=300 project=runs/baseline name=yolov11n_correct_dataset
+   ```
+
+5. **Verify metrics** - Training should reach mAP50 ≈ 0.824 (matching thesis)
+
+### After Baseline Training Completes
+- Compare results against thesis baseline (see table in "Baseline Performance" section)
+- If mAP50 matches (~0.824), proceed with model improvement experiments
+- Log results to W&B for tracking
+
+---
 
 ### Completed
 - [x] Cloned ubm-yolo-detector repo
-- [x] Downloaded dataset from Roboflow (22,725 images)
 - [x] Created Python venv with ultralytics, roboflow
 - [x] Created IMPROVEMENT_TARGETS.md with concrete metrics
 - [x] Extracted baseline metrics from Edo's thesis
+- [x] Identified dataset mismatch (2026-01-23)
+- [x] Created `download_fsoco.py` script
+- [x] Created `wandb_api.py` for monitoring
 
-### Next Session: Start Here
-1. **Transfer to Ubuntu workstation** - Copy `datasets/cone-detector/` folder
-2. **Run baseline training:**
-   ```bash
-   source venv/bin/activate
-   yolo train model=yolo11n.pt data=datasets/cone-detector/data.yaml epochs=300
-   ```
-3. **Verify baseline metrics** - Should match thesis (mAP50 ≈ 0.824)
-4. **Day 4 checkpoint** - If mAP50 ≥ 0.84 continue, else pivot to Plan B
-
-### Decision Point
-- **Plan A (current):** Cone detection improvement
-- **Plan B (backup):** Overtaking model debugging (ubm-ai repo also cloned)
-- **Pivot trigger:** If Day 4 results don't reach Tier 1 targets (mAP50 ≥ 0.84)
-
-### Files Created This Session
+### Files in This Project
 - `CLAUDE.md` - This file
 - `IMPROVEMENT_TARGETS.md` - Detailed targets and experiment plan
 - `competing_plans.md` - Plan A vs Plan B comparison
-- `.env` - Roboflow API key (gitignored)
+- `download_fsoco.py` - Downloads correct FSOCO dataset from Roboflow
+- `wandb_api.py` - W&B API interface for monitoring training runs
+- `.env` - API keys (gitignored)
 - `.gitignore` - Security for API keys
-- `venv/` - Python environment
-- `datasets/cone-detector/` - 22,725 training images
+- `venv/` - Python environment (gitignored)
