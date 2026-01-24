@@ -31,3 +31,4 @@ wandb/
 
 # Screenshots/misc images (not dataset)
 api screenshot.jpg
+*.avi
