@@ -1,0 +1,98 @@
+# W&B Sweep Configuration for YOLOv11n Hyperparameter Search
+# Target: Improve on baseline mAP50 = 0.714
+
+program: train_sweep.py
+method: bayes  # Bayesian optimization (more efficient than grid search)
+metric:
+  name: metrics/mAP50(B)
+  goal: maximize
+
+# Early termination - stop poor runs early to save time
+early_terminate:
+  type: hyperband
+  min_iter: 30  # Minimum 30 epochs before termination
+  eta: 2
+  s: 3
+
+parameters:
+  # Learning rate - critical for convergence
+  lr0:
+    distribution: uniform
+    min: 0.005
+    max: 0.02
+
+  # Final learning rate multiplier
+  lrf:
+    distribution: uniform
+    min: 0.01
+    max: 0.1
+
+  # Warmup epochs
+  warmup_epochs:
+    values: [1, 3, 5]
+
+  # Augmentation - HSV color jitter
+  hsv_h:
+    distribution: uniform
+    min: 0.0
+    max: 0.03
+
+  hsv_s:
+    distribution: uniform
+    min: 0.5
+    max: 0.9
+
+  hsv_v:
+    distribution: uniform
+    min: 0.3
+    max: 0.6
+
+  # Mosaic augmentation
+  mosaic:
+    distribution: uniform
+    min: 0.5
+    max: 1.0
+
+  # Close mosaic - when to stop mosaic aug
+  close_mosaic:
+    values: [0, 5, 10, 15, 20]
+
+  # Mixup augmentation
+  mixup:
+    distribution: uniform
+    min: 0.0
+    max: 0.3
+
+  # Copy-paste augmentation
+  copy_paste:
+    distribution: uniform
+    min: 0.0
+    max: 0.3
+
+  # Weight decay (regularization)
+  weight_decay:
+    distribution: uniform
+    min: 0.0001
+    max: 0.001
+
+  # Dropout (for overfitting prevention)
+  dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.2
+
+  # Degrees rotation
+  degrees:
+    distribution: uniform
+    min: 0.0
+    max: 10.0
+
+  # Fixed parameters
+  epochs:
+    value: 100  # Use 100 epochs for quick evaluation
+  batch:
+    value: 48  # Reduced from 64 (memory leak between runs)
+  imgsz:
+    value: 640
+  data:
+    value: 'datasets/FSOCO-12/data.yaml'

@@ -17,6 +17,8 @@ weights/
 *.pt
 *.onnx
 *.engine
+*.log
+wandb/
 
 # Jupyter
 .ipynb_checkpoints/

@@ -239,19 +239,36 @@ trtexec --onnx=best.onnx --fp16 --saveEngine=best.engine
 
 ---
 
-## Session Status (Last Updated: 2026-01-23)
+## Session Status (Last Updated: 2026-01-24)
 
-### Critical Discovery (2026-01-23)
-**The current training run is using the WRONG dataset.**
+### ✅ Baseline Training COMPLETED
 
-| | Thesis (correct) | Current run (wrong) |
-|---|---|---|
-| Workspace | `fmdv` | `fsbdriverless` |
-| Project | `fsoco-kxq3s` | `cone-detector-zruok` |
-| Version | 12 | 1 |
-| Expected mAP50 | ~0.824 | Plateaued at ~0.68 |
+**Training Run 2 (CORRECT dataset - COMPLETED):**
+- Dataset: `FSOCO-12` from `fmdv/fsoco-kxq3s` version 12
+- Status: **Completed 300 epochs successfully**
+- **Result: mAP50 = 0.714** (vs thesis target: 0.824)
+- Gap: -13.4% below thesis baseline
+- Model: `runs/detect/runs/baseline/yolov11n_300ep_FSOCO_correct/weights/best.pt`
 
-The current training run (`yolov11n_300ep_baseline8`) will NOT match thesis baseline. It must be restarted with the correct dataset.
+**Critical Finding:**
+- Thesis baseline (mAP50 = 0.824) **NOT reproduced**
+- Original hyperparameters were LOST - we used Ultralytics defaults
+- Our baseline (mAP50 = 0.714) is valid and reproducible
+- **Recommendation:** Use 0.714 as NEW baseline for improvement experiments
+
+**Update from Gabriele (2026-01-24):**
+- Provided actual production weights AND training notebook!
+- Location: `/home/nicolas/Github/ubm-yolo-detector/yolo/models/yolov11n_640p_300ep/best.pt`
+- Training notebook: `ubm-yolo-detector/training/fsae-ev-driverless-yolo-training.ipynb`
+
+**🏆 CRITICAL FINDING:**
+- UBM notebook (200 epochs): mAP50 = 0.663
+- Our baseline (300 epochs): mAP50 = **0.714** (+7.7% better!)
+- **We already BEAT their published notebook results!**
+- Mystery: Model filename says "300ep" but notebook shows 200 epochs
+- **TODO:** Evaluate production `best.pt` to see if it matches ours or is better
+
+**See:** `BASELINE_RESULTS_ANALYSIS.md` for full analysis and recommendations
 
 ### W&B Monitoring
 Use `wandb_api.py` to check training progress:
@@ -261,29 +278,18 @@ python wandb_api.py ncridlig-ml4cv/runs-baseline/<RUN_ID> --all
 
 ---
 
-## TASKS FOR UBUNTU WORKSTATION
+## Key Files Modified
 
-### Immediate Actions (do these now)
+### `train_baseline.py` - Now accepts arguments
+```bash
+# Use default (FSOCO-12 correct dataset)
+python train_baseline.py
 
-1. **Stop the current training run** (it's using the wrong dataset)
+# Override dataset
+python train_baseline.py --data datasets/cone-detector/data.yaml --epochs 100 --batch 32
+```
 
-2. **Create .env file with API key:**
-   ```bash
-   echo "ROBOFLOW_API_KEY=jm1EGrJnS6cmTQfcBeBs" > .env
-   ```
-
-3. **Download the CORRECT dataset:**
-   ```bash
-   pip install roboflow
-   python download_fsoco.py
-   ```
-
-4. **Start new baseline training with correct dataset:**
-   ```bash
-   yolo train model=yolo11n.pt data=datasets/fsoco-kxq3s-12/data.yaml epochs=300 project=runs/baseline name=yolov11n_correct_dataset
-   ```
-
-5. **Verify metrics** - Training should reach mAP50 ≈ 0.824 (matching thesis)
+**Defaults:** FSOCO-12 dataset, 300 epochs, batch 64, W&B enabled
 
 ### After Baseline Training Completes
 - Compare results against thesis baseline (see table in "Baseline Performance" section)
@@ -293,13 +299,20 @@ python wandb_api.py ncridlig-ml4cv/runs-baseline/<RUN_ID> --all
 ---
 
 ### Completed
-- [x] Cloned ubm-yolo-detector repo
-- [x] Created Python venv with ultralytics, roboflow
-- [x] Created IMPROVEMENT_TARGETS.md with concrete metrics
-- [x] Extracted baseline metrics from Edo's thesis
-- [x] Identified dataset mismatch (2026-01-23)
-- [x] Created `download_fsoco.py` script
-- [x] Created `wandb_api.py` for monitoring
+- [x] Baseline training completed: mAP50 = 0.714 (FSOCO-12)
+- [x] Contacted Edoardo - confirmed thesis results from Gabriele/Patta's work
+- [x] Set up W&B automated hyperparameter sweep (Bayesian optimization)
+- [x] Identified key challenges: brightness robustness, orange cone classification
+- [x] Created comprehensive sweep infrastructure (13 hyperparameters, 20 runs)
+
+### In Progress
+- [ ] W&B sweep running (~15-20 hours, targeting mAP50 > 0.75)
+
+### Next: After Sweep Completes
+1. Analyze sweep results (focus on brightness augmentation, orange cone performance)
+2. Extract best config and train for 300 epochs
+3. Architecture comparison (YOLOv11s, YOLOv11m)
+4. Robustness analysis and real-world validation recommendations
 
 ### Files in This Project
 - `CLAUDE.md` - This file
