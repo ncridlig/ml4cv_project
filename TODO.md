@@ -36,22 +36,41 @@ Script now accepts `--data`, `--epochs`, `--batch` arguments. Default: FSOCO-12.
 4. **Orange cone size distinction** (normal vs large) is difficult at distance
 5. **Real validation should be on car data**, not internet datasets like FSOCO
 
-### From Gabriele - UBM Training Notebook Analysis
-**MAJOR FINDING:** Our baseline BEATS their notebook!
+### From Gabriele's CV Report (Nov 2025) - 🔴 GAME CHANGER
 
-| Metric | UBM Notebook (200 ep) | Our Baseline (300 ep) | Winner |
-|--------|----------------------|----------------------|--------|
-| mAP50 | 0.663 | **0.714** | **🏆 OURS (+7.7%)** |
-| Recall | 0.573 | **0.657** | **🏆 OURS (+14.7%)** |
+**CRITICAL DISCOVERY: Dataset Split Mismatch!**
+
+Gabriele's report reveals the **TRUE baseline** from their production system:
+
+| Metric | Gabriele's Baseline | Dataset Split |
+|--------|---------------------|---------------|
+| **mAP50** | **0.824** | **Test set (689 images)** ✅ |
+| Precision | 0.849 | Test set |
+| Recall | 0.765 | Test set |
+| mAP50-95 | 0.570 | Test set |
+
+**OUR EVALUATIONS (INVALID FOR COMPARISON):**
+
+| Model | mAP50 | Dataset Split |
+|-------|-------|---------------|
+| Our baseline | 0.714 | Validation set (1,968 images) ❌ |
+| UBM production | 0.670 | Validation set ❌ |
+
+**⚠️ Problem:** We evaluated on **validation set**, Gabriele used **test set**
+**✅ Solution:** Re-evaluate ALL models on test set for fair comparison
 
 **Implications:**
-- ✅ Our baseline is STRONG - already ahead of their published results
-- ✅ Same dataset (FSOCO-12), same model (YOLOv11n)
-- ✅ Longer training (300 vs 200 epochs) helped
-- 🔍 Mystery: Their production model is named "300ep" but notebook shows 200
-- 📌 Must evaluate their production `best.pt` to see if it's better than notebook
+- Gabriele's 0.824 is the **actual production baseline** on test set
+- Our 0.714 vs 0.670 comparisons are valid (both on validation)
+- **But we cannot compare to 0.824 until we re-run on test set!**
+- The 0.824 baseline is **achievable** - Gabriele already did it
 
-**See:** `TRAINING_COMPARISON.md` for detailed analysis
+**Inference performance (RTX 3080 Mobile + TensorRT):**
+- Total pipeline: 9.46 ms (with ORB features)
+- YOLO inference only: 6.78 ms
+- Real-time capable at 60 fps
+
+**See:** `GABRIELE_BASELINE_ANALYSIS.md` for full details
 
 ---
 
@@ -72,14 +91,35 @@ Script now accepts `--data`, `--epochs`, `--batch` arguments. Default: FSOCO-12.
 
 **Target:** Find config with mAP50 > 0.75 (5% improvement)
 
-### Phase 2: Evaluate UBM Official Model on Test Set (1 hour) - AFTER SWEEP
-**Critical discovery:** Gabriele provided their actual production weights!
-- Model: `/home/nicolas/Github/ubm-yolo-detector/yolo/models/yolov11n_640p_300ep/best.pt`
-- This is the model running on the actual car
-- **Task:** Run `python evaluate_ubm_model.py` to evaluate on FSOCO-12 **test set**
-- **Status:** Previously evaluated on validation set (mAP50 = 0.670), needs re-run on test set for proper comparison
-- **Why:** Test set provides unbiased performance estimate; validation set was used during our baseline training
-- **Memory constraint:** Cannot run in parallel with sweep - do AFTER sweep completes
+### Phase 2: Re-Evaluate ALL Models on Test Set (2 hours) - AFTER SWEEP ⚠️ CRITICAL
+
+**🔴 DATASET SPLIT ERROR DISCOVERED:**
+- Gabriele's baseline (mAP50 = 0.824): **Test set** (689 images)
+- Our baseline (mAP50 = 0.714): **Validation set** (1,968 images)
+- **Cannot compare validation vs test results - MUST re-evaluate on test set!**
+
+**Source:** Gabriele's report `report_ceccolini_esame_cv_yolo.pdf` (Nov 2025)
+
+**Tasks:**
+
+1. **Our baseline on test set:**
+   ```bash
+   python -c "from ultralytics import YOLO; model = YOLO('runs/baseline/yolov11n_300ep_FSOCO_correct/weights/best.pt'); model.val(data='datasets/FSOCO-12/data.yaml', split='test')"
+   ```
+
+2. **UBM production model on test set:**
+   ```bash
+   python evaluate_ubm_model.py  # Already fixed to use test set
+   ```
+
+3. **Comparison targets:**
+   - Gabriele's baseline: mAP50 = **0.824** (test set)
+   - Our baseline: ? (needs test set evaluation)
+   - UBM production: ? (needs test set evaluation)
+
+**Memory constraint:** Cannot run in parallel with sweep - do AFTER sweep completes
+
+**See:** `GABRIELE_BASELINE_ANALYSIS.md` for full analysis
 
 ### Phase 3: Full Training with Best Config (4 hours)
 1. Run `python analyze_sweep.py <sweep_id>` to extract best config
@@ -92,30 +132,49 @@ Script now accepts `--data`, `--epochs`, `--batch` arguments. Default: FSOCO-12.
 - Train YOLOv11s and YOLOv11m
 - Compare: YOLOv11n (baseline) vs YOLOv11n (tuned) vs YOLOv11s vs YOLOv11m vs UBM official
 
-### Phase 5: ONNX Export & Inference Benchmarking (2 hours)
-**Critical for deployment:** Measure real-world inference performance
+### Phase 5: Inference Optimization & Benchmarking (3-5 days) - CRITICAL FOR REAL-TIME
 
-**Models to benchmark:**
-- Our baseline (best.pt)
-- Our tuned (from sweep)
-- UBM official (for comparison)
-- YOLOv11s/m (if trained)
+**🔥 NEW: Comprehensive optimization research completed!**
+**See:** `INFERENCE_OPTIMIZATION_RESEARCH.md` (12 techniques ranked by risk/novelty)
 
-**Export to ONNX (batch=2 for stereo):**
+**Current Baseline:** 6.78ms inference (Gabriele, RTX 3080 Mobile, TensorRT FP16)
+**Target:** < 5ms on RTX 4080 Super for 60fps stereo capability
+
+**Recommended "Goldilocks" Strategy (3-5 days):**
+
+**Option A: Safe & Effective (1-2 days)**
+1. TensorRT FP16 conversion → Expected: **4.5ms** (guaranteed)
+2. INT8 quantization → Expected: **2.8ms** (low risk)
+**Result:** 2.4× speedup, mAP ~0.80
+
+**Option B: Balanced Novelty (3-5 days)** ⭐ **RECOMMENDED FOR PROFESSOR**
+1. Train YOLO12 (attention-centric, 2025 release) → Expected: **1.5ms**, mAP ~0.835
+2. TensorRT INT8 quantization → Expected: **1.0ms**, mAP ~0.810
+**Result:** 6.8× speedup, state-of-the-art architecture, impressive for academic project
+
+**Option C: Maximum Novelty (1-2 weeks)**
+1. YOLO12 training
+2. Structured pruning (50% channels)
+3. Early exit / adaptive inference
+**Result:** 0.8-1.2ms, mAP 0.80-0.82, publication-quality research
+
+**Export & Benchmark Script:**
 ```bash
-yolo export model=runs/baseline/yolov11n_300ep_FSOCO_correct/weights/best.pt format=onnx batch=2
+# TensorRT FP16 (baseline)
+yolo export model=best.pt format=engine half=True batch=2
+
+# TensorRT INT8 (advanced)
+yolo export model=best.pt format=engine int8=True batch=2
+
+# Benchmark
+python benchmark_inference.py --model best_fp16.engine --runs 100 --batch 2
 ```
 
-**Benchmark on RTX 4080 Super:**
-- Test with ONNX runtime
-- Measure: preprocess, inference, postprocess times
-- Target: < 8ms total (60fps requires < 16.7ms, but stereo needs 2 inferences)
-- Compare against Edo's thesis baseline (6.78ms on RTX 3080 Mobile)
-
 **Deliverable:**
-- Inference speed table (YOLOv11n/s/m on ONNX + RTX 4080 Super)
-- Comparison: Our models vs UBM official vs Thesis baseline
-- Real-time capability confirmation (can it run at 60fps?)
+- Ablation study table (FP16 vs INT8 vs YOLO12 vs pruning)
+- Inference speed comparison vs Gabriele's baseline (6.78ms)
+- Real-time capability analysis (can it sustain 60fps on stereo?)
+- Recommendation for production deployment
 
 ### Files Created
 - ✅ `sweep_config.yaml` - Search space definition (13 hyperparameters)
@@ -124,10 +183,11 @@ yolo export model=runs/baseline/yolov11n_300ep_FSOCO_correct/weights/best.pt for
 - ✅ `analyze_sweep.py` - Extract best config from sweep results
 - ✅ `train_best_config.py` - Final 300-epoch training with best config
 - ✅ `SWEEP_GUIDE.md` - Complete documentation
-- ✅ `evaluate_ubm_model.py` - Evaluate UBM's official model
+- ✅ `evaluate_ubm_model.py` - Evaluate UBM's official model (FIXED: now uses test set)
 - ✅ `benchmark_inference.py` - ONNX inference speed benchmarking
 - ✅ `RESEARCH_FOCUS_AREAS.md` - Brightness & orange cone challenges from Edo
-- ✅ `UBM_EVALUATION_RESULTS.md` - UBM model evaluation (YOU WIN! +6.5%)
+- ✅ `UBM_EVALUATION_RESULTS.md` - UBM model evaluation on validation set (needs re-run on test)
+- ✅ `GABRIELE_BASELINE_ANALYSIS.md` - TRUE baseline from Gabriele's CV report (0.824 on test set)
 
 ---
 
