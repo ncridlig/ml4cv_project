@@ -17,10 +17,21 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+# Fix import shadowing: Remove current directory from sys.path temporarily
+# to avoid importing local wandb/ directory instead of installed package
+_original_path = sys.path.copy()
+_script_dir = str(Path(__file__).parent.absolute())
+if _script_dir in sys.path:
+    sys.path.remove(_script_dir)
+
 try:
     import wandb
+    from wandb.apis.public import Run
 except ImportError:
     sys.exit("Error: wandb not installed. Run: pip install wandb")
+finally:
+    # Restore original sys.path
+    sys.path = _original_path
 
 try:
     import pandas as pd
@@ -47,7 +58,7 @@ def load_api_key() -> Optional[str]:
     return None
 
 
-def get_run(run_path: str) -> wandb.apis.public.Run:
+def get_run(run_path: str) -> Run:
     """Get a W&B run by path."""
     api_key = load_api_key()
     if api_key:
@@ -57,7 +68,7 @@ def get_run(run_path: str) -> wandb.apis.public.Run:
     return api.run(run_path)
 
 
-def print_run_info(run: wandb.apis.public.Run) -> None:
+def print_run_info(run: Run) -> None:
     """Print basic run information."""
     print("=" * 50)
     print("RUN INFO")
@@ -74,7 +85,7 @@ def print_run_info(run: wandb.apis.public.Run) -> None:
                 print(f"  {key}: {value}")
 
 
-def print_current_metrics(run: wandb.apis.public.Run) -> None:
+def print_current_metrics(run: Run) -> None:
     """Print current/latest metrics from run summary."""
     print("=" * 50)
     print("CURRENT METRICS")
@@ -130,7 +141,7 @@ def print_current_metrics(run: wandb.apis.public.Run) -> None:
                 print(f"  {label:15}: {value}")
 
 
-def print_history(run: wandb.apis.public.Run, last_n: int = 10) -> None:
+def print_history(run: Run, last_n: int = 10) -> None:
     """Print training history."""
     print("=" * 50)
     print(f"TRAINING HISTORY (last {last_n} epochs)")
@@ -180,7 +191,7 @@ def print_history(run: wandb.apis.public.Run, last_n: int = 10) -> None:
             print(display_df.to_string())
 
 
-def print_best_metrics(run: wandb.apis.public.Run) -> None:
+def print_best_metrics(run: Run) -> None:
     """Print best metrics achieved during training."""
     print("=" * 50)
     print("BEST METRICS")
@@ -210,7 +221,7 @@ def print_best_metrics(run: wandb.apis.public.Run) -> None:
                 print(f"Best {label:12}: {best:.4f}")
 
 
-def print_comparison(run: wandb.apis.public.Run, baseline: dict) -> None:
+def print_comparison(run: Run, baseline: dict) -> None:
     """Print comparison against baseline metrics."""
     print("=" * 50)
     print("COMPARISON VS BASELINE")

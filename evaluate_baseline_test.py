@@ -21,7 +21,7 @@ print("=" * 70)
 print("EVALUATING OUR BASELINE ON FSOCO-12 TEST SET")
 print("=" * 70)
 print()
-print("Model: runs/baseline/yolov11n_300ep_FSOCO_correct/weights/best.pt")
+print("Model: runs/detect/runs/baseline/yolov11n_300ep_FSOCO_correct/weights/best.pt")
 print("Dataset: FSOCO-12 test set (689 images)")
 print()
 print("Comparison target:")
@@ -31,7 +31,8 @@ print("=" * 70)
 print()
 
 # Load our baseline model
-model_path = 'runs/baseline/yolov11n_300ep_FSOCO_correct/weights/best.pt'
+# model_path = 'runs/baseline/yolov11n_300ep_FSOCO_correct/weights/best.pt'
+model_path = 'runs/detect/runs/baseline/yolov11n_300ep_FSOCO_correct/weights/best.pt'
 model = YOLO(model_path)
 
 print("Model loaded successfully")
