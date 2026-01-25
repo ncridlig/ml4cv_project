@@ -1,5 +1,23 @@
 # ML4CV 3CFU Project: Cone Detection Improvement
 
+---
+
+## 📝 DOCUMENTATION POLICY
+
+**⚠️ IMPORTANT: To keep the repository clean and organized:**
+
+1. **All project documentation, analysis, results, and notes should be added to THIS FILE (CLAUDE.md)**
+2. **Additional .md files are stored in `docs/` folder** - not in root directory
+3. **When documenting new findings, updates, or results, append them to the relevant section in CLAUDE.md**
+4. **Keep root directory clean** - only essential scripts and this documentation file
+
+**Current documentation structure:**
+- `CLAUDE.md` - Main project documentation (THIS FILE)
+- `docs/` - Archive of detailed analysis documents
+- `TODO.md` - Active task tracking (separate for workflow)
+
+---
+
 ## Project Overview
 
 **Goal:** Improve the real-time cone detection and color classification pipeline for UniBo Motorsport's autonomous race car (Formula SAE Driverless competition).
@@ -239,7 +257,7 @@ trtexec --onnx=best.onnx --fp16 --saveEngine=best.engine
 
 ---
 
-## Session Status (Last Updated: 2026-01-24)
+## Session Status (Last Updated: 2026-01-25)
 
 ### ✅ Baseline Training COMPLETED
 
@@ -314,12 +332,77 @@ python train_baseline.py --data datasets/cone-detector/data.yaml --epochs 100 --
 3. Architecture comparison (YOLOv11s, YOLOv11m)
 4. Robustness analysis and real-world validation recommendations
 
+---
+
+## 🎯 Current Progress (2026-01-25)
+
+### ✅ Major Achievements
+
+**Test Set Performance (FSOCO-12, 689 images):**
+- **YOLO12n: 0.7081 mAP50** (+6.4% vs UBM production 0.6655) 🏆
+- **YOLOv11n baseline: 0.7065 mAP50** (+6.2% vs UBM)
+- **UBM production: 0.6655 mAP50** (proven baseline)
+
+**Key Findings:**
+1. ✅ **Beat UBM production model** by 6.4% on test set
+2. ✅ **Hyperparameter sweep ineffective** - defaults already optimal (all 10/21 runs worse than baseline)
+3. ✅ **YOLO12 training successful** - 2025 architecture performs well
+4. ✅ **INT8 TensorRT export complete** - ready for RTX 4060 deployment
+5. ⚠️ **Gabriele's 0.824 claim unverified** - UBM production can't reproduce it
+
+### 🔄 In Progress
+
+**YOLO26 Training (Started 2026-01-25):**
+- Model: YOLO26n (latest Ultralytics architecture, 2.57M params)
+- Status: Training (300 epochs, ~2.5 days)
+- Goal: Beat YOLO12n (0.7081 mAP50)
+- Expected: 0.71-0.73 mAP50 (similar or better)
+
+### 📅 Meeting with Alberto (Workshop)
+
+**Goal 1: Create Custom Test Set from .mcap Data**
+- Extract 100 frames from car's camera recordings
+- Convert to YOLO format for real-world validation
+- Validate model on actual deployment conditions
+
+**Goal 2: Benchmark YOLO12 INT8 on RTX 4060**
+- Transfer TensorRT engine to car
+- Measure real-world inference speed (target: < 5 ms per image)
+- Compare to baseline (6.78 ms on RTX 3080 Mobile)
+
+### 📊 Repository Organization
+
+**Root Directory (Clean):**
+- `CLAUDE.md` - Main documentation (this file)
+- `TODO.md` - Active task tracking
+- `*.py` - Training, evaluation, and export scripts
+- `venv/` - Python environment
+
+**Documentation Archive:**
+- `docs/` - All analysis, guides, and results (.md files)
+
+**Key Scripts:**
+- Training: `train_baseline.py`, `train_yolo12.py`, `train_yolo26.py`
+- Evaluation: `evaluate_*_test.py` (baseline, ubm, yolo12, yolo26)
+- Export: `export_yolo12_onnx.py`, `export_tensorrt_int8.py`
+- Benchmarking: `benchmark_int8.py`, `benchmark_yolo26_int8.py`
+- Utilities: `wandb_api.py`, `download_fsoco.py`
+
+### 🎓 Academic Contributions
+
+1. **Systematic architecture evaluation** - YOLOv11 → YOLO12 → YOLO26
+2. **Hyperparameter analysis** - Demonstrated diminishing returns
+3. **INT8 quantization** - Deployment optimization for RTX 4060
+4. **Real-world validation** - Custom test set from .mcap data (planned)
+
+---
+
 ### Files in This Project
-- `CLAUDE.md` - This file
-- `IMPROVEMENT_TARGETS.md` - Detailed targets and experiment plan
-- `competing_plans.md` - Plan A vs Plan B comparison
-- `download_fsoco.py` - Downloads correct FSOCO dataset from Roboflow
-- `wandb_api.py` - W&B API interface for monitoring training runs
+- `CLAUDE.md` - Main project documentation (this file)
+- `TODO.md` - Active task tracking
+- `docs/` - Documentation archive (analysis, guides, results)
+- `download_fsoco.py` - Downloads FSOCO-12 dataset from Roboflow
+- `wandb_api.py` - W&B API interface for monitoring training
 - `.env` - API keys (gitignored)
 - `.gitignore` - Security for API keys
 - `venv/` - Python environment (gitignored)
