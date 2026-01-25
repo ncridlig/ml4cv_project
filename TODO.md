@@ -16,11 +16,113 @@
 - ✅ YOLOv11n baseline complete
 - ✅ Hyperparameter sweep complete (stopped - no improvement)
 - ✅ YOLO12n training complete (300/300 epochs)
+- ✅ YOLO12n INT8 TensorRT export complete
 - ✅ Test set evaluation complete
+- 🔄 **YOLO26n training IN PROGRESS** (started 2026-01-25)
 
-**Next Immediate Action:** INT8 optimization → `python3 optimize_yolo12_int8.py`
+**Next Immediate Actions:**
+- 🔄 Wait for YOLO26 training to complete (~2.5 days)
+- 📅 Meeting with Alberto (workshop) - see goals below
 
-**Timeline:** 30 min INT8 export + benchmarking, then deployment to RTX 4060
+---
+
+## 🤝 Meeting with Alberto - Workshop Goals
+
+**Date:** TBD (tomorrow)
+**Location:** Workshop
+
+### Goal 1: Create Custom Test Set from .mcap Data 🎥
+
+**Objective:** Create a small real-world test set from car's camera data
+
+**Requirements:**
+- Extract **100 frames** from .mcap recorded data
+- Convert to YOLO format (images + labels)
+- Use for real-world validation
+
+**Why Important:**
+- FSOCO-12 is internet dataset (may not match real conditions)
+- Car data = ground truth for actual deployment
+- Validates model on true edge cases (lighting, weather, track conditions)
+
+**Deliverables:**
+- [ ] 100 annotated frames from .mcap
+- [ ] YOLO format dataset (`data.yaml`, images/, labels/)
+- [ ] Test script: `evaluate_on_car_data.py`
+
+**Tools Needed:**
+- .mcap reader (ROS2 bag format)
+- Frame extraction tool
+- Annotation tool (LabelImg, Roboflow, or existing labels if available)
+
+---
+
+### Goal 2: Benchmark YOLO12 TensorRT Engine on Car's RTX 4060 ⚡
+
+**Objective:** Measure real-world inference speed on deployment hardware
+
+**Requirements:**
+- Transfer `best.engine` to car's RTX 4060
+- Run benchmark with actual stereo images (batch=2)
+- Measure: mean, std, min, max latency (100 runs minimum)
+
+**Why Important:**
+- Current estimates based on RTX 4080 Super (training GPU)
+- RTX 4060 is actual deployment target
+- Need real numbers for 60 fps validation
+
+**Expected Results:**
+- Current estimate: ~8.3 ms (batch=2) = 4.15 ms per image
+- Target: < 5 ms per image for 60 fps capability
+- Baseline: 6.78 ms (UBM production on RTX 3080 Mobile)
+
+**Deliverables:**
+- [ ] YOLO12 INT8 engine transferred to car
+- [ ] Inference benchmark results on RTX 4060
+- [ ] Comparison to UBM baseline
+- [ ] Real-time capability assessment (60 fps?)
+
+**Files to Transfer:**
+```
+runs/detect/runs/yolo12/yolo12n_300ep_FSOCO2/weights/best.engine
+```
+
+**Benchmark Script (run on car):**
+```python
+# benchmark_on_car.py (create similar to benchmark_int8.py)
+# - Load best.engine on RTX 4060
+# - Run 100 inference passes with stereo images
+# - Report: mean, std, min, max latency
+```
+
+---
+
+## 📋 Workshop Checklist
+
+**Before Meeting:**
+- [ ] Prepare YOLO12 INT8 engine on USB drive
+- [ ] Prepare benchmark script for RTX 4060
+- [ ] Identify .mcap files for test set creation
+- [ ] Review current results (0.7081 mAP50, 6.4% improvement)
+
+**During Meeting:**
+- [ ] Extract 100 frames from .mcap data
+- [ ] Set up annotation pipeline (or check existing labels)
+- [ ] Transfer YOLO12 engine to car
+- [ ] Run inference benchmark on RTX 4060
+- [ ] Document real-world performance
+
+**After Meeting:**
+- [ ] Complete test set annotation if needed
+- [ ] Evaluate YOLO12 on car test set
+- [ ] Compare FSOCO-12 vs car data performance
+- [ ] Update report with real-world results
+
+---
+
+## Current Tasks (Parallel to YOLO26 Training)
+
+**While YOLO26 trains (~2.5 days):**
 
 ---
 
@@ -240,7 +342,53 @@ python3 benchmark_int8.py
 - Accuracy comparison (validation set)
 - Deployment recommendations for RTX 4060
 
+### 🚀 Alternative: Train YOLO26 (Newest Architecture) - OPTIONAL
+
+**Goal:** Test latest YOLO architecture (YOLO26, 2025) vs YOLO12
+
+**Why YOLO26?**
+- Latest Ultralytics architecture (available in 8.4.7)
+- Similar parameters (2.57M) to YOLO12n (2.56M)
+- May have architectural improvements over YOLO12
+
+**Command:**
+```bash
+python3 train_yolo26.py  # 2.5 days training
+```
+
+**Expected Results:**
+- **Best case:** 0.72-0.73 mAP50 (+2-3% vs YOLO12)
+- **Moderate:** 0.70-0.71 mAP50 (similar to YOLO12)
+- **Worst case:** 0.68-0.70 mAP50 (stick with YOLO12)
+
+**Decision Point:**
+- If YOLO26 > YOLO12 → Use YOLO26 for deployment
+- If YOLO26 ≈ YOLO12 → Either works, choose simpler
+- If YOLO26 < YOLO12 → Stick with YOLO12
+
+**After Training:**
+```bash
+# Evaluate on test set
+python3 evaluate_yolo26_test.py
+
+# If better, export to INT8
+python3 export_yolo26_tensorrt_int8.py
+python3 benchmark_yolo26_int8.py
+```
+
+**See:** `YOLO26_TRAINING_GUIDE.md` for complete documentation
+
+---
+
 ### Files Created
+
+**YOLO26 Training (New):**
+- ✅ `train_yolo26.py` - Train YOLO26n on FSOCO-12
+- ✅ `evaluate_yolo26_test.py` - Test set evaluation
+- ✅ `export_yolo26_onnx.py` - Export to ONNX
+- ✅ `export_yolo26_tensorrt_int8.py` - Export to TensorRT INT8 (workspace=8GB, FP16 fallback)
+- ✅ `benchmark_yolo26_int8.py` - Benchmark FP32 vs INT8
+- ✅ `YOLO26_TRAINING_GUIDE.md` - Complete documentation
 
 **Test Set Evaluation:**
 - ✅ `evaluate_baseline_test.py` - Evaluate our baseline on test set
