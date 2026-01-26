@@ -1,0 +1,18 @@
+description: Ultralytics YOLO11n model trained on /kaggle/working/FSOCO-12/data.yaml
+author: Ultralytics
+date: '2025-06-18T17:20:40.323774'
+version: 8.3.50
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 2
+imgsz:
+- 640
+- 640
+names:
+  0: blue_cone
+  1: large_orange_cone
+  2: orange_cone
+  3: unknown_cone
+  4: yellow_cone

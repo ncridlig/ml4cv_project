@@ -1,0 +1,26 @@
+description: Ultralytics YOLOv12n model trained on FSOCO-12/data.yaml
+author: Ultralytics
+date: '2025-07-02T22:33:04.272281'
+version: 8.3.161
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 2
+imgsz:
+- 1280
+- 1280
+names:
+  0: blue_cone
+  1: large_orange_cone
+  2: orange_cone
+  3: unknown_cone
+  4: yellow_cone
+args:
+  batch: 2
+  fraction: 1.0
+  half: false
+  int8: false
+  dynamic: false
+  nms: false
+channels: 3
