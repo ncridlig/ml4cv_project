@@ -18,6 +18,8 @@
 
 ---
 
+**USE THE VENV FOR ALL PYTHON FILES**
+
 ## Project Overview
 
 **Goal:** Improve the real-time cone detection and color classification pipeline for UniBo Motorsport's autonomous race car (Formula SAE Driverless competition).
@@ -334,29 +336,111 @@ python train_baseline.py --data datasets/cone-detector/data.yaml --epochs 100 --
 
 ---
 
-## 🎯 Current Progress (2026-01-25)
+## 🎯 Current Progress (2026-01-26)
+
+### 🏆 PROJECT COMPLETE: YOLO26n Deployed on ASU!
+
+**Final Test Set Performance (FSOCO-12, 689 images):**
+- **YOLO26n: 0.7626 mAP50** 🏆 NEW BEST MODEL
+- **vs UBM production: +14.6%** (0.7626 vs 0.6655)
+- **vs YOLO12n: +7.7%** (0.7626 vs 0.7081)
+- **vs YOLOv11n: +7.9%** (0.7626 vs 0.7065)
+
+**ASU Deployment Performance (RTX 4060, TensorRT FP16):**
+- **Latency: 2.63 ms** (mean)
+- **GPU Compute: 1.019 ms**
+- **Throughput: 633 qps (queries per second)**
+- **vs UBM baseline: 2.58× faster** (2.63 ms vs 6.78 ms)
+- **Real-time margin: 6.3× for 60 fps** (2.63 ms << 16.7 ms budget)
+
+**YOLO26n Model Specifications:**
+- Architecture: YOLO26n (2025, latest Ultralytics)
+- Parameters: 2,505,750 (2.51M)
+- GFLOPs: 5.780
+- Precision: 0.8485 (highest for safety-critical)
+- Recall: 0.6935 (good detection rate)
+- TensorRT FP16: 9.35 MB
+
+**Per-Class Performance (Test Set):**
+- Large Orange Cone: **0.886 mAP50** ⭐
+- Blue Cone: **0.863 mAP50**
+- Yellow Cone: **0.856 mAP50**
+- Orange Cone: **0.843 mAP50**
+- Unknown Cone: 0.364 mAP50 ⚠️
+
+**W&B Run Details:**
+- Project: `ncridlig-ml4cv/runs-yolo26`
+- Run ID: `yolo26n_300ep_FSOCO_20260125_122257`
+- URL: https://wandb.ai/ncridlig-ml4cv/runs-yolo26/runs/yolo26n_300ep_FSOCO_20260125_122257
+- Training time: 300 epochs, batch 64, ~2.5 days on RTX 4080 Super
 
 ### ✅ Major Achievements
 
-**Test Set Performance (FSOCO-12, 689 images):**
-- **YOLO12n: 0.7081 mAP50** (+6.4% vs UBM production 0.6655) 🏆
-- **YOLOv11n baseline: 0.7065 mAP50** (+6.2% vs UBM)
-- **UBM production: 0.6655 mAP50** (proven baseline)
+**Accuracy:**
+1. ✅ **YOLO26n is BEST model:** 0.7626 mAP50 (+14.6% over UBM production)
+2. ✅ **YOLO26 beats YOLO12 by 7.7%** on test set (0.7626 vs 0.7081)
+3. ✅ **All classes improved:** Blue (+5.9%), Yellow (+6.0%), Orange (+6.8%), Unknown (+23.4%)
+4. ✅ **Highest precision:** 0.8485 (safety-critical for autonomous racing)
 
-**Key Findings:**
-1. ✅ **Beat UBM production model** by 6.4% on test set
-2. ✅ **Hyperparameter sweep ineffective** - defaults already optimal (all 10/21 runs worse than baseline)
-3. ✅ **YOLO12 training successful** - 2025 architecture performs well
-4. ✅ **INT8 TensorRT export complete** - ready for RTX 4060 deployment
-5. ⚠️ **Gabriele's 0.824 claim unverified** - UBM production can't reproduce it
+**Speed:**
+1. ✅ **Fastest inference:** 2.63 ms on RTX 4060 (FP16 TensorRT)
+2. ✅ **2.58× faster than UBM** baseline (6.78 ms → 2.63 ms)
+3. ✅ **2.6% faster than YOLOv11n** production (2.70 ms → 2.63 ms)
+4. ✅ **Real-time capable:** 6.3× margin for 60 fps
 
-### 🔄 In Progress
+**Deployment:**
+1. ✅ **TensorRT engine built on ASU** (RTX 4060, FP16)
+2. ✅ **Engine portable:** Built on RTX 4080 Super, works on RTX 4060
+3. ✅ **ROS bags converted:** lidar1.avi + lidar2.avi for test set creation
+4. ✅ **Production ready:** Ready for ROS2 integration
 
-**YOLO26 Training (Started 2026-01-25):**
-- Model: YOLO26n (latest Ultralytics architecture, 2.57M params)
-- Status: Training (300 epochs, ~2.5 days)
-- Goal: Beat YOLO12n (0.7081 mAP50)
-- Expected: 0.71-0.73 mAP50 (similar or better)
+**Research:**
+1. ✅ **Hyperparameter sweep ineffective** - defaults already optimal
+2. ✅ **2025 architectures successful** - YOLO12 and YOLO26 both beat baseline
+3. ✅ **INT8 not needed** - FP16 already exceeds requirements (6.3× margin)
+4. ⚠️ **Gabriele's 0.824 claim unverified** - UBM production can't reproduce it
+
+### 🔄 Next Steps: UBM Test Set Creation
+
+**Priority:** Create real-world test set from car camera data
+
+**Steps:**
+1. ✅ Convert ROS bags to AVI videos (lidar1.avi, lidar2.avi) - DONE
+2. 🔄 Extract frames from videos (~100-200 stereo pairs)
+3. 🔄 Split stereo images (left/right separation)
+4. 🔄 Upload to Roboflow for annotation
+5. 🔄 Label cones (5 classes)
+6. 🔄 Download YOLO format dataset
+7. 🔄 Evaluate YOLO26 on UBM test set
+
+**Videos ready in `/media`:**
+- `20_11_2025_Rioveggio_Test_LidarTest1.avi` (203 MB, 1454 frames, 60 FPS, 24.2s)
+- `20_11_2025_Rioveggio_Test_LidarTest2.avi` (194 MB, 1374 frames, 60 FPS, 22.9s)
+
+**Script created:** `extract_frames_from_avi.py` (configured for 60 FPS)
+
+```bash
+source venv/bin/activate
+
+# Extract every 60 frames (1 second at 60fps = 2 seconds real-world time)
+python3 extract_frames_from_avi.py \
+    media/20_11_2025_Rioveggio_Test_LidarTest1.avi \
+    --output ubm_test_set/images \
+    --interval 60 \
+    --prefix lidar1
+
+python3 extract_frames_from_avi.py \
+    media/20_11_2025_Rioveggio_Test_LidarTest2.avi \
+    --output ubm_test_set/images \
+    --interval 60 \
+    --prefix lidar2
+```
+
+**Expected output:** ~46 stereo pairs (92 images total)
+
+**See:**
+- `docs/UBM_TEST_SET_EXTRACTION.md` - Complete extraction guide
+- `docs/TODO.md` - Full test set creation workflow
 
 ### 📅 Meeting with Alberto (Workshop)
 

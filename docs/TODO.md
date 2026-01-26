@@ -1,28 +1,115 @@
 # TODO List
 
-## 📊 Current Status (2026-01-25)
+## 📊 Current Status (2026-01-26)
+
+**🎉 YOLO26n Training COMPLETE - NEW BEST MODEL!**
+
+**Validation Set Performance:**
+- **YOLO26n (NEW BEST): 0.7586 mAP50** 🏆 ✅
+- YOLO12n: **0.7127 mAP50** ✅
+- YOLOv11n baseline: **0.7140 mAP50** ✅
+- **Improvement: +6.4%** over YOLO12n!
 
 **Test Set Performance (689 images):**
-- **YOLO12n (BEST): 0.7081 mAP50** 🏆 ✅
-- Our YOLOv11n baseline: **0.7065 mAP50** ✅
+- **YOLO12n: 0.7081 mAP50** (+6.4% vs UBM) ✅
+- Our YOLOv11n baseline: **0.7065 mAP50** (+6.2% vs UBM) ✅
 - UBM production model: **0.6655 mAP50**
-- Gabriele's unverified claim: **0.824 mAP50** ⚠️
-
-**Improvements Over UBM Production:**
-- YOLO12n: **+6.4%** (0.7081 vs 0.6655)
-- Our baseline: **+6.2%** (0.7065 vs 0.6655)
+- **YOLO26n: 🔄 PENDING EVALUATION**
 
 **Training Status:**
 - ✅ YOLOv11n baseline complete
 - ✅ Hyperparameter sweep complete (stopped - no improvement)
 - ✅ YOLO12n training complete (300/300 epochs)
 - ✅ YOLO12n INT8 TensorRT export complete
-- ✅ Test set evaluation complete
-- 🔄 **YOLO26n training IN PROGRESS** (started 2026-01-25)
+- ✅ Test set evaluation complete (YOLO12, baseline, UBM)
+- ✅ **YOLO26n training COMPLETE** (300/300 epochs) 🎉
 
 **Next Immediate Actions:**
-- 🔄 Wait for YOLO26 training to complete (~2.5 days)
-- 📅 Meeting with Alberto (workshop) - see goals below
+1. 🔄 **Evaluate YOLO26 on test set** - `python3 evaluate_yolo26_test.py`
+2. 🔄 **Compare YOLO26 vs YOLO12** test results
+3. 🔄 **If YOLO26 better:** Export to INT8 and deploy
+4. 📅 Meeting with Alberto (workshop) - see goals below
+
+---
+
+## 🚀 YOLO26 Next Steps (PRIORITY)
+
+### Step 1: Test Set Evaluation ⚡ (15 minutes)
+
+**Command:**
+```bash
+source venv/bin/activate
+python3 evaluate_yolo26_test.py
+```
+
+**What it does:**
+- Evaluates YOLO26n on test set (689 images)
+- Compares to YOLO12 test results (0.7081 mAP50)
+- Generates confusion matrix, per-class metrics
+- Saves results to: `runs/evaluation/yolo26n_on_test_set/`
+
+**Expected Results:**
+- **Best case:** 0.73-0.75 mAP50 (+3-6% over YOLO12)
+- **Good case:** 0.71-0.72 mAP50 (+0.5-2% over YOLO12)
+- **Similar:** 0.70-0.71 mAP50 (±0.5% vs YOLO12)
+
+**Decision:**
+- If mAP50 > 0.715 → **Use YOLO26** for deployment ✅
+- If mAP50 < 0.715 → Stick with YOLO12 ⚠️
+
+---
+
+### Step 2: INT8 Optimization (30 minutes) - Conditional
+
+**IF YOLO26 > YOLO12 on test set:**
+
+```bash
+# Export to TensorRT INT8 (batch=2 for stereo, workspace=8GB)
+python3 export_yolo26_tensorrt_int8.py
+
+# Benchmark speed and accuracy (FP32 vs INT8)
+python3 benchmark_yolo26_int8.py
+```
+
+**Expected Performance (RTX 4080 Super):**
+- FP32: ~3.4 ms (PyTorch baseline from W&B)
+- INT8: ~2.0-2.5 ms (1.4-1.7× speedup)
+- Accuracy loss: <1% (0.75 → ~0.74 mAP50)
+
+**Expected Performance (RTX 4060 - Deployment):**
+- INT8: ~3.3-4.2 ms (batch=2) = **1.65-2.1 ms per image**
+- vs Baseline: 6.78 ms (3.2-4.1× FASTER than UBM!)
+- Real-time: 60 fps capable (16.7 ms budget)
+
+**Deliverables:**
+- TensorRT INT8 engine: `runs/yolo26/yolo26n_300ep_FSOCO/weights/best.engine`
+- Speed benchmark results
+- Accuracy comparison (validation set)
+
+---
+
+### Step 3: Final Model Selection
+
+**Comparison Matrix:**
+
+| Metric | YOLO12n | YOLO26n | Winner |
+|--------|---------|---------|--------|
+| **Test mAP50** | 0.7081 | 🔄 TBD | 🔄 |
+| **Validation mAP50** | 0.7127 | 0.7586 | YOLO26 ✅ |
+| **Precision** | 0.8401 | 0.8325 | YOLO12 ✅ |
+| **Recall** | 0.6542 | 0.7012 | YOLO26 ✅ |
+| **PyTorch Speed** | 4.1 ms | 3.4 ms | YOLO26 ✅ |
+| **INT8 Speed (est)** | ~2.5 ms | ~2.2 ms | YOLO26 ✅ |
+| **vs UBM** | +6.4% | 🔄 TBD | 🔄 |
+
+**Selection Criteria:**
+1. **Primary:** Test set mAP50 (accuracy)
+2. **Secondary:** INT8 inference speed (deployment)
+3. **Tertiary:** Precision (safety-critical false positives)
+
+**Recommendation (Provisional):**
+- If YOLO26 test mAP50 > 0.715 → **YOLO26 wins** (better accuracy + faster)
+- If YOLO26 test mAP50 < 0.715 → **YOLO12 wins** (proven reliability)
 
 ---
 
@@ -99,24 +186,219 @@ runs/detect/runs/yolo12/yolo12n_300ep_FSOCO2/weights/best.engine
 
 ## 📋 Workshop Checklist
 
-**Before Meeting:**
-- [ ] Prepare YOLO12 INT8 engine on USB drive
-- [ ] Prepare benchmark script for RTX 4060
-- [ ] Identify .mcap files for test set creation
-- [ ] Review current results (0.7081 mAP50, 6.4% improvement)
+**✅ COMPLETED (2026-01-26):**
+- [x] Transfer YOLO26 ONNX to ASU
+- [x] Compile YOLO26 TensorRT FP16 engine on RTX 4060
+- [x] Run inference benchmarks (YOLO26 + YOLOv11n)
+- [x] Convert ROS bags to AVI videos (lidar1.avi, lidar2.avi)
+- [x] Document performance (2.63 ms latency, 6.3× margin for 60 fps)
 
-**During Meeting:**
-- [ ] Extract 100 frames from .mcap data
-- [ ] Set up annotation pipeline (or check existing labels)
-- [ ] Transfer YOLO12 engine to car
-- [ ] Run inference benchmark on RTX 4060
-- [ ] Document real-world performance
+**Results:**
+- ✅ **YOLO26n: 2.63 ms latency** on RTX 4060 (FP16)
+- ✅ **2.58× faster** than UBM baseline (6.78 ms)
+- ✅ **2.6% faster** than YOLOv11n production (2.70 ms)
 
-**After Meeting:**
-- [ ] Complete test set annotation if needed
-- [ ] Evaluate YOLO12 on car test set
-- [ ] Compare FSOCO-12 vs car data performance
-- [ ] Update report with real-world results
+**🔄 IN PROGRESS:**
+- [ ] Create UBM test set from .avi videos (see workflow below)
+
+---
+
+## 🎯 UBM Test Set Creation Workflow (PRIORITY)
+
+**Goal:** Create a real-world test set from car camera data for ongoing model evaluation
+
+**Why Important:**
+- FSOCO-12 is internet dataset (may not match real track conditions)
+- Car data = ground truth for actual deployment
+- Validates model on true edge cases (lighting, weather, motion blur)
+- Becomes **permanent benchmark** for future model improvements
+
+### Phase 1: Frame Extraction (30 minutes)
+
+**Input:**
+- `media/20_11_2025_Rioveggio_Test_LidarTest1.avi` - 2560×720, 60 FPS, 1454 frames (24.2s)
+- `media/20_11_2025_Rioveggio_Test_LidarTest2.avi` - 2560×720, 60 FPS, 1374 frames (22.9s)
+
+**Objective:** Extract ~46 stereo pairs (92 images total), split stereo images
+
+**Sampling:** Every 60 frames = 1 second at 60 FPS = **2 seconds real-world time**
+
+**Script:** `extract_frames_from_avi.py` ✅ READY
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Extract LidarTest1 frames (every 60 frames = 2 seconds real-world)
+python3 extract_frames_from_avi.py \
+    media/20_11_2025_Rioveggio_Test_LidarTest1.avi \
+    --output ubm_test_set/images \
+    --interval 60 \
+    --prefix lidar1
+
+# Extract LidarTest2 frames (every 60 frames = 2 seconds real-world)
+python3 extract_frames_from_avi.py \
+    media/20_11_2025_Rioveggio_Test_LidarTest2.avi \
+    --output ubm_test_set/images \
+    --interval 60 \
+    --prefix lidar2
+```
+
+**Expected Output:**
+- `ubm_test_set/images/lidar1_left_0000.jpg` through `lidar1_left_0023.jpg` (24 images)
+- `ubm_test_set/images/lidar1_right_0000.jpg` through `lidar1_right_0023.jpg` (24 images)
+- `ubm_test_set/images/lidar2_left_0000.jpg` through `lidar2_left_0021.jpg` (22 images)
+- `ubm_test_set/images/lidar2_right_0000.jpg` through `lidar2_right_0021.jpg` (22 images)
+- **Total: ~92 images (46 stereo pairs)**
+
+**Calculation:**
+- LidarTest1: 1454 frames / 60 = 24 stereo pairs
+- LidarTest2: 1374 frames / 60 = 22 stereo pairs
+- Each stereo pair = left + right image
+
+### Phase 2: Roboflow Annotation (2-3 hours)
+
+**Platform:** Roboflow (used by Alberto and Edoardo)
+
+**Steps:**
+1. **Create new project:** "UBM-Rioveggio-Test-2025"
+2. **Upload images:** Drag-and-drop all ~92 extracted frames
+3. **Configure classes:**
+   - blue_cone
+   - yellow_cone
+   - orange_cone
+   - large_orange_cone
+   - unknown_cone
+4. **Annotate cones:** Draw bounding boxes around all visible cones
+5. **Quality check:** Review all annotations for accuracy
+6. **Export dataset:** YOLOv11 PyTorch format
+
+**Expected Annotations:**
+- ~92 images × ~5-10 cones per image = **~500-900 total annotations**
+
+**Tips:**
+- Use keyboard shortcuts (faster annotation)
+- Annotate in batches (left images first, then right)
+- Mark occluded cones as "unknown_cone" if ambiguous
+- Include challenging cases (distant cones, motion blur, shadows)
+- Tight bounding boxes (minimize background)
+
+### Phase 3: Dataset Integration (30 minutes)
+
+**Download from Roboflow:**
+```bash
+# In ml4cv_project directory
+mkdir -p datasets/UBM-Rioveggio-Test-2025
+cd datasets/UBM-Rioveggio-Test-2025
+
+# Download using Roboflow API
+python3 -c "
+from roboflow import Roboflow
+rf = Roboflow(api_key='YOUR_KEY')
+project = rf.workspace('ubm').project('ubm-rioveggio-test-2025')
+dataset = project.version(1).download('yolov11')
+"
+```
+
+**Create `data.yaml`:**
+```yaml
+# UBM Rioveggio Test Set - Real Car Data (Nov 20, 2025)
+path: datasets/UBM-Rioveggio-Test-2025
+train: images  # Empty (test-only dataset)
+val: images    # Empty
+test: images   # All images here
+
+nc: 5
+names:
+  0: blue_cone
+  1: yellow_cone
+  2: orange_cone
+  3: large_orange_cone
+  4: unknown_cone
+```
+
+### Phase 4: Model Evaluation (15 minutes)
+
+**Evaluate all models on UBM test set:**
+
+```bash
+source venv/bin/activate
+
+# Evaluate YOLO26n (best model)
+python3 evaluate_yolo26_ubm_test.py
+
+# Evaluate YOLO12n (comparison)
+python3 evaluate_yolo12_ubm_test.py
+
+# Evaluate YOLOv11n baseline (comparison)
+python3 evaluate_baseline_ubm_test.py
+```
+
+**Expected Results:**
+- Real-world mAP50 may be **lower** than FSOCO-12 (more challenging)
+- Edge cases will be revealed (distant cones, motion blur, lighting)
+- Becomes permanent benchmark for future improvements
+
+### Phase 5: Documentation (30 minutes)
+
+**Create:** `docs/UBM_TEST_SET_RESULTS.md`
+
+**Include:**
+- Per-model performance on UBM test set
+- Comparison to FSOCO-12 test set
+- Challenging cases analysis (false positives/negatives)
+- Recommendations for model improvements
+
+---
+
+## 📋 UBM Test Set Checklist
+
+**Phase 1: Extraction (~30 minutes)**
+- [ ] Run `extract_frames_from_avi.py` on LidarTest1 (interval=60)
+- [ ] Run `extract_frames_from_avi.py` on LidarTest2 (interval=60)
+- [ ] Verify output: ~92 images (46 stereo pairs)
+- [ ] Check image quality (no corruption, correct 1280×720 split)
+
+**Phase 2: Annotation (~2-3 hours)**
+- [ ] Create Roboflow project: "UBM-Rioveggio-Test-2025"
+- [ ] Upload all ~92 images
+- [ ] Configure 5 cone classes
+- [ ] Annotate all cones (~500-900 annotations)
+- [ ] Quality check all annotations
+- [ ] Export YOLOv11 format
+
+**Phase 3: Integration (~30 minutes)**
+- [ ] Download dataset from Roboflow
+- [ ] Create data.yaml with correct paths
+- [ ] Verify dataset structure
+
+**Phase 4: Evaluation (~15 minutes)**
+- [ ] Evaluate YOLO26n on UBM test set
+- [ ] Evaluate YOLO12n on UBM test set
+- [ ] Evaluate YOLOv11n baseline on UBM test set
+
+**Phase 5: Documentation (~30 minutes)**
+- [ ] Document results: `UBM_TEST_SET_RESULTS.md`
+- [ ] Compare FSOCO-12 vs UBM performance
+- [ ] Analyze edge cases and failure modes
+- [ ] Update project summary
+
+**Estimated Total Time:** 4-5 hours
+
+**See detailed guide:** `docs/UBM_TEST_SET_EXTRACTION.md`
+
+---
+
+## 🎓 Virtual Top-Down View (LOWEST PRIORITY)
+
+**Status:** ❌ **Deprioritized**
+
+**Reason:** Existing 3D visualization (see `media/Existing_3D_View.png`) already shows:
+- 3D point cloud with cone positions
+- Camera view with bounding boxes
+- Sufficient for debugging and visualization
+
+**Decision:** Focus on UBM test set creation instead (higher value)
 
 ---
 

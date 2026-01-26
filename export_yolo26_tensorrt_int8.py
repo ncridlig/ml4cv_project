@@ -6,7 +6,6 @@ This is Step 2 of the INT8 optimization pipeline.
 Uses validation set for calibration (NEVER test set!).
 
 Improvements over YOLO12 export:
-- Larger workspace (8 GB instead of 4 GB)
 - FP16 fallback enabled for better accuracy
 """
 import os
@@ -43,7 +42,6 @@ print("  - Precision: INT8 (8-bit quantization)")
 print("  - Image size: 640x640")
 print("  - Batch size: 2 (stereo: left + right image)")
 print("  - Calibration: Validation set (FSOCO-12)")
-print("  - Workspace: 8 GB (optimized for 16GB GPU)")
 print("  - FP16 fallback: Enabled (better accuracy)")
 print()
 print("⚠️  CRITICAL: Using VALIDATION SET for calibration")
@@ -58,10 +56,10 @@ model.export(
     imgsz=640,
     batch=2,              # Batch size 2 for stereo (left + right image)
     half=True,            # Enable FP16 fallback for better accuracy
-    int8=True,            # Enable INT8 quantization
+    int8=False,            # Enable INT8 quantization
     data='datasets/FSOCO-12/data.yaml',  # Provides validation data for calibration
     device=0,             # GPU to use
-    workspace=8,          # Max workspace size in GB (increased from 4 GB)
+    workspace=16,          # Max workspace size in GB (increased from 4 GB)
 )
 
 print()

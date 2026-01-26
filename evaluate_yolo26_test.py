@@ -21,7 +21,7 @@ print("=" * 70)
 print("EVALUATING YOLO26n ON FSOCO-12 TEST SET")
 print("=" * 70)
 print()
-print("Model: runs/yolo26/yolo26n_300ep_FSOCO/weights/best.pt")
+print("Model: runs/detect/runs/yolo26/yolo26n_300ep_FSOCO/weights/best.pt")
 print("Dataset: FSOCO-12 test set (689 images)")
 print()
 print("Comparison targets:")
@@ -33,7 +33,7 @@ print("=" * 70)
 print()
 
 # Load YOLO26n model
-model_path = 'runs/yolo26/yolo26n_300ep_FSOCO/weights/best.pt'
+model_path = 'runs/detect/runs/yolo26/yolo26n_300ep_FSOCO/weights/best.pt'
 print(f"Loading model: {model_path}")
 model = YOLO(model_path)
 

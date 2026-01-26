@@ -10,6 +10,7 @@ venv/
 # Datasets (large files)
 datasets/
 *.zip
+ubm_test_set/
 
 # Training outputs
 runs/

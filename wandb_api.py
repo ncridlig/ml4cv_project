@@ -68,6 +68,21 @@ def get_run(run_path: str) -> Run:
     return api.run(run_path)
 
 
+def get_latest_run(entity_project: str) -> Run:
+    """Get the latest run from a project (entity/project)."""
+    api_key = load_api_key()
+    if api_key:
+        os.environ["WANDB_API_KEY"] = api_key
+
+    api = wandb.Api()
+    runs = api.runs(entity_project, order="-created_at", per_page=1)
+
+    if not runs:
+        raise ValueError(f"No runs found in project: {entity_project}")
+
+    return runs[0]
+
+
 def print_run_info(run: Run) -> None:
     """Print basic run information."""
     print("=" * 50)
@@ -256,7 +271,8 @@ Examples:
         """
     )
 
-    parser.add_argument("run_path", help="W&B run path (entity/project/run_id)")
+    parser.add_argument("run_path", help="W&B run path (entity/project/run_id or entity/project with --latest)")
+    parser.add_argument("--latest", action="store_true", help="Fetch the latest run from the project")
     parser.add_argument("--info", action="store_true", help="Show run info")
     parser.add_argument("--metrics", action="store_true", help="Show current metrics")
     parser.add_argument("--history", action="store_true", help="Show training history")
@@ -275,7 +291,13 @@ Examples:
         args.info = args.metrics = args.history = args.best = args.compare = True
 
     try:
-        run = get_run(args.run_path)
+        if args.latest:
+            print(f"Fetching latest run from: {args.run_path}")
+            run = get_latest_run(args.run_path)
+            print(f"Found: {run.name} (ID: {run.id})")
+            print()
+        else:
+            run = get_run(args.run_path)
     except wandb.errors.CommError as e:
         sys.exit(f"Error connecting to W&B: {e}")
     except Exception as e:
