@@ -117,12 +117,12 @@ python3 benchmark_yolo26_int8.py
 
 ## 🤝 Meeting with Alberto - Workshop Goals
 
-**Date:** TBD (tomorrow)
+**Date:** 1-26-26
 **Location:** Workshop
 
 ### Goal 1: Create Custom Test Set from .mcap Data 🎥
 
-**Objective:** Create a small real-world test set from car's camera data
+**Objective:** Create a small real-world test set from car's camera data 
 
 **Requirements:**
 - Extract **100 frames** from .mcap recorded data
@@ -135,8 +135,8 @@ python3 benchmark_yolo26_int8.py
 - Validates model on true edge cases (lighting, weather, track conditions)
 
 **Deliverables:**
-- [ ] 100 annotated frames from .mcap
-- [ ] YOLO format dataset (`data.yaml`, images/, labels/)
+- [X] 100 annotated frames from .mcap
+- [X] YOLO format dataset (`data.yaml`, images/, labels/)
 - [ ] Test script: `evaluate_on_car_data.py`
 
 **Tools Needed:**
@@ -485,6 +485,323 @@ python3 evaluate_baseline_ubm_test.py
 **Actual Time Spent:** 5 hours (extraction, annotation, export)
 
 **See detailed guide:** `docs/UBM_TEST_SET_EXTRACTION.md`
+
+---
+
+## 🎯 Confidence Threshold Tuning (AFTER BEST MODEL SELECTION)
+
+**Status:** 🔄 READY (after `evaluate_fsoco_ubm.py` completes)
+
+**Goal:** Optimize confidence threshold for best model on fsoco-ubm dataset to maximize F1 score
+
+**When to Do This:**
+- ✅ **AFTER** selecting best model from fsoco-ubm evaluation
+- ✅ **BEFORE** final deployment to ROS2
+- ✅ This is the **last optimization step** before production
+
+**Why Important:**
+- Default Ultralytics uses conf=0.25 for validation, conf=0.001 for prediction
+- Optimal threshold varies by dataset and use case
+- F1 score balances precision (safety - no false positives) and recall (detection rate)
+- Tuning on fsoco-ubm ensures optimal performance on real car data
+
+---
+
+### Phase 1: F1 Curve Analysis (Already Available)
+
+**Good News:** `evaluate_fsoco_ubm.py` already generates F1 curves with `plots=True`
+
+**Location:** After running evaluation, check:
+```
+runs/evaluation/{model_name}_fsoco_ubm/
+├── F1_curve.png          # ⭐ KEY PLOT - F1 score vs confidence threshold
+├── P_curve.png           # Precision vs confidence threshold
+├── R_curve.png           # Recall vs confidence threshold
+├── PR_curve.png          # Precision-Recall curve
+└── confusion_matrix.png  # Confusion matrix
+```
+
+**How to Read F1_curve.png:**
+- **X-axis:** Confidence threshold (0.0 to 1.0)
+- **Y-axis:** F1 score (harmonic mean of precision and recall)
+- **Peak of curve:** Optimal confidence threshold
+- **Formula:** F1 = 2 × (Precision × Recall) / (Precision + Recall)
+
+**Visual Inspection:**
+1. Open `F1_curve.png` for best model
+2. Find the peak (highest point on the curve)
+3. Read X-axis value at peak → optimal conf threshold
+4. Example: If peak is at X=0.35, optimal conf=0.35
+
+---
+
+### Phase 2: Systematic Threshold Search (Script-Based)
+
+**Create:** `optimize_confidence_threshold.py`
+
+```python
+#!/usr/bin/env python3
+"""
+Find optimal confidence threshold for best model on fsoco-ubm.
+Tests multiple thresholds and reports best F1 score.
+"""
+from ultralytics import YOLO
+import numpy as np
+
+# Load best model (update after fsoco-ubm evaluation)
+BEST_MODEL = 'runs/detect/runs/yolo26/yolo26n_300ep_FSOCO/weights/best.pt'
+DATA_YAML = 'datasets/ml4cv_project-1/data.yaml'
+
+model = YOLO(BEST_MODEL)
+
+# Test different confidence thresholds
+thresholds = np.arange(0.1, 0.6, 0.05)  # 0.1, 0.15, 0.2, ..., 0.55
+best_f1 = 0
+best_conf = 0.25
+results_table = []
+
+print("=" * 80)
+print("CONFIDENCE THRESHOLD OPTIMIZATION ON fsoco-ubm")
+print("=" * 80)
+print()
+print(f"Model: {BEST_MODEL}")
+print(f"Dataset: {DATA_YAML} (test split)")
+print(f"Testing {len(thresholds)} thresholds: {thresholds[0]:.2f} to {thresholds[-1]:.2f}")
+print()
+print("-" * 80)
+print(f"{'Conf':<8} {'Precision':<12} {'Recall':<12} {'F1':<12} {'mAP50':<10}")
+print("-" * 80)
+
+for conf in thresholds:
+    results = model.val(
+        data=DATA_YAML,
+        split='test',
+        batch=64,
+        conf=conf,  # Override confidence threshold
+        verbose=False,  # Suppress output
+        plots=False,  # Skip plot generation
+        device=0,
+    )
+
+    precision = results.results_dict.get('metrics/precision(B)', 0)
+    recall = results.results_dict.get('metrics/recall(B)', 0)
+    map50 = results.results_dict.get('metrics/mAP50(B)', 0)
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+
+    results_table.append({
+        'conf': conf,
+        'precision': precision,
+        'recall': recall,
+        'f1': f1,
+        'map50': map50,
+    })
+
+    marker = "🏆" if f1 > best_f1 else "  "
+    print(f"{marker} {conf:<6.2f} {precision:<12.4f} {recall:<12.4f} {f1:<12.4f} {map50:<10.4f}")
+
+    if f1 > best_f1:
+        best_f1 = f1
+        best_conf = conf
+
+print("-" * 80)
+print()
+print("=" * 80)
+print("OPTIMAL THRESHOLD")
+print("=" * 80)
+print(f"🏆 Best Confidence: {best_conf:.2f}")
+print(f"   F1 Score: {best_f1:.4f}")
+print()
+
+# Get detailed stats for optimal threshold
+optimal_result = next(r for r in results_table if r['conf'] == best_conf)
+print(f"   Precision: {optimal_result['precision']:.4f}")
+print(f"   Recall: {optimal_result['recall']:.4f}")
+print(f"   mAP50: {optimal_result['map50']:.4f}")
+print()
+
+# Run final validation with optimal threshold to generate plots
+print("=" * 80)
+print("FINAL VALIDATION WITH OPTIMAL THRESHOLD")
+print("=" * 80)
+print()
+print(f"Running validation with conf={best_conf:.2f}...")
+
+final_results = model.val(
+    data=DATA_YAML,
+    split='test',
+    batch=64,
+    conf=best_conf,
+    plots=True,  # Generate plots
+    save_json=True,
+    project='runs/evaluation',
+    name=f'best_model_optimized_conf_{best_conf:.2f}',
+    device=0,
+)
+
+print()
+print(f"✅ Results saved to: runs/evaluation/best_model_optimized_conf_{best_conf:.2f}/")
+print()
+print("=" * 80)
+print("DEPLOYMENT RECOMMENDATION")
+print("=" * 80)
+print()
+print(f"1. Update ROS2 inference node with: conf={best_conf:.2f}")
+print(f"2. In C++ code: float confidence_threshold = {best_conf:.2f}f;")
+print(f"3. For Python inference: model.predict(..., conf={best_conf:.2f})")
+print()
+print("=" * 80)
+```
+
+**Usage:**
+```bash
+source venv/bin/activate
+
+# After running evaluate_fsoco_ubm.py and identifying best model
+python3 optimize_confidence_threshold.py
+```
+
+**Expected Output:**
+- Table of conf vs F1 score
+- Optimal threshold identified (e.g., conf=0.35)
+- Final validation with plots saved
+
+---
+
+### Phase 3: Apply Optimal Threshold to ONNX/TensorRT
+
+**IMPORTANT:** Confidence threshold is applied during **postprocessing**, NOT in the model itself.
+
+**The model outputs raw predictions**, then you filter by confidence threshold in inference code.
+
+#### Option 1: Python Inference (Ultralytics)
+
+```python
+from ultralytics import YOLO
+
+# Load TensorRT engine or ONNX model
+model = YOLO('runs/detect/.../weights/best.engine')  # or best.onnx
+
+# Use optimal confidence threshold from Phase 2
+optimal_conf = 0.35  # From optimize_confidence_threshold.py
+
+# Inference with optimized threshold
+results = model.predict(
+    source='path/to/images',
+    conf=optimal_conf,  # Apply optimized threshold
+    iou=0.45,  # NMS IoU threshold (can also tune)
+    device=0,
+    verbose=True,
+)
+
+# Validation with optimized threshold
+results = model.val(
+    data='datasets/ml4cv_project-1/data.yaml',
+    split='test',
+    conf=optimal_conf,
+    plots=True,
+)
+```
+
+#### Option 2: C++ Inference (ROS2 Node)
+
+**File:** `src/ros_yolo_detector_node.cpp`
+
+```cpp
+// After TensorRT inference, during postprocessing
+
+// Set optimal confidence threshold from Python analysis
+float confidence_threshold = 0.35f;  // From optimize_confidence_threshold.py
+float iou_threshold = 0.45f;  // NMS threshold
+
+// Filter raw detections by confidence
+std::vector<Detection> filtered_detections;
+for (const auto& detection : raw_detections) {
+    if (detection.confidence >= confidence_threshold) {
+        filtered_detections.push_back(detection);
+    }
+}
+
+// Apply NMS to filtered detections
+auto final_detections = apply_nms(filtered_detections, iou_threshold);
+```
+
+**Where to modify:**
+1. Locate postprocessing function in `ros_yolo_detector_node.cpp`
+2. Find confidence filtering step (likely around line 800-1000)
+3. Replace hardcoded threshold (probably 0.25 or 0.5) with optimal value
+4. Recompile ROS2 package
+
+---
+
+### Phase 4: Validation and Deployment
+
+**Validation Steps:**
+1. ✅ Run `optimize_confidence_threshold.py` to find optimal threshold
+2. ✅ Re-evaluate on fsoco-ubm with optimal conf to verify improvement
+3. ✅ Test on sample images visually (check bounding boxes)
+4. ✅ Compare to default conf=0.25 performance
+
+**Deployment Checklist:**
+- [ ] Update confidence threshold in ROS2 C++ inference node
+- [ ] Recompile ROS2 package with new threshold
+- [ ] Test on car with live camera feed
+- [ ] Monitor false positive rate during test runs
+- [ ] Document optimal threshold in deployment docs
+
+**Expected Improvements:**
+- F1 score: +2-5% over default conf=0.25
+- Better balance of precision and recall
+- Fewer false positives OR better detection rate (depending on threshold direction)
+
+---
+
+### Phase 5: (Optional) NMS IoU Threshold Tuning
+
+**After confidence tuning**, you can also tune NMS IoU threshold (default: 0.45)
+
+```python
+# Similar approach to confidence tuning
+iou_thresholds = [0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
+
+for iou in iou_thresholds:
+    results = model.val(
+        data=DATA_YAML,
+        split='test',
+        conf=optimal_conf,  # Use optimal conf from Phase 2
+        iou=iou,  # Test different NMS thresholds
+        verbose=False,
+    )
+    # Compare mAP50 scores
+```
+
+**NMS IoU Effect:**
+- **Lower IoU** (0.3-0.4): More aggressive NMS, removes more overlapping boxes
+- **Higher IoU** (0.5-0.6): Less aggressive, keeps more detections
+- Default 0.45 is usually good, but cone detection may benefit from tuning
+
+---
+
+### Summary: Optimization Order
+
+**Correct sequence for deployment optimization:**
+
+1. ✅ **Architecture selection** (YOLO26n vs YOLO12n vs YOLOv11n) ← fsoco-ubm evaluation
+2. 🔄 **Confidence threshold tuning** ← optimize_confidence_threshold.py
+3. 🔄 **(Optional) NMS IoU tuning** ← if needed
+4. 🔄 **(Optional) Test-Time Augmentation (TTA)** ← if real-time budget allows
+5. ✅ **Deploy to ROS2** ← Update C++ node with optimal parameters
+
+**Timeline:**
+- Phase 1: Already done (F1_curve.png generated by evaluate_fsoco_ubm.py)
+- Phase 2: 30 minutes (run optimize_confidence_threshold.py)
+- Phase 3: 15 minutes (update ROS2 C++ code)
+- Phase 4: 1 hour (validation and testing)
+- **Total: ~2 hours**
+
+**See Also:**
+- Ultralytics docs: https://docs.ultralytics.com/guides/hyperparameter-tuning/
+- F1 score explanation: https://en.wikipedia.org/wiki/F-score
+- NMS tuning guide: https://docs.ultralytics.com/modes/predict/#inference-arguments
 
 ---
 

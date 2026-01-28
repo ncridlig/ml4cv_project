@@ -24,7 +24,7 @@ print("=" * 80)
 print()
 
 # Model path
-model_path = 'runs/two-stage-yolo26/stage2_fsoco12_300ep/weights/best.pt'
+model_path = 'runs/detect/runs/two-stage-yolo26/stage2b_full_finetune_250ep/weights/best.pt'
 
 print(f"Model: {model_path}")
 print(f"Dataset: FSOCO-12 test set (689 images, 12,054 instances)")

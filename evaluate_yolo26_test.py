@@ -34,6 +34,8 @@ print()
 
 # Load YOLO26n model
 model_path = 'runs/detect/runs/yolo26/yolo26n_300ep_FSOCO/weights/best.pt'
+# Load YOLO26n Stage 1 model
+# model_path = 'runs/detect/runs/two-stage-yolo26/stage1_cone_detector_400ep2/weights/best.pt'
 print(f"Loading model: {model_path}")
 model = YOLO(model_path)
 
@@ -48,7 +50,7 @@ print()
 results = model.val(
     data='datasets/FSOCO-12/data.yaml',
     split='test',  # CRITICAL: Use test set, not validation!
-    batch=32,
+    batch=16,
     device=0,
     plots=True,
     save_json=True,

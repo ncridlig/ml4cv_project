@@ -62,8 +62,8 @@ print("=" * 70)
 print()
 
 # Model paths
-fp32_path = 'runs/detect/runs/yolo26/yolo26n_300ep_FSOCO/weights/best.pt'
-int8_path = 'runs/detect/runs/yolo26/yolo26n_300ep_FSOCO/weights/best.engine'
+fp32_path = 'runs/detect/runs/two-stage-yolo26/stage2b_full_finetune_250ep/weights/best.pt'
+int8_path = 'runs/detect/runs/two-stage-yolo26/stage2b_full_finetune_250ep/weights/best.engine'
 
 # Check if INT8 model exists
 if not Path(int8_path).exists():

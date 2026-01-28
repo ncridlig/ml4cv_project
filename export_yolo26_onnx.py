@@ -25,7 +25,7 @@ print("=" * 70)
 print()
 
 # Load trained YOLO26 model
-model_path = 'runs/detect/runs/yolo26/yolo26n_300ep_FSOCO/weights/best.pt'
+model_path = 'runs/detect/runs/two-stage-yolo26/stage2b_full_finetune_250ep/weights/best.pt'
 print(f"Loading model: {model_path}")
 model = YOLO(model_path)
 
@@ -56,7 +56,7 @@ print("=" * 70)
 print("✅ ONNX EXPORT COMPLETE")
 print("=" * 70)
 print()
-print(f"Output: runs/detect/runs/yolo26/yolo26n_300ep_FSOCO/weights/best.onnx")
+print(f"Output: runs/detect/runs/two-stage-yolo26/stage2b_full_finetune_250ep/weights/best.onnx")
 print()
 print("Next step: Run export_yolo26_tensorrt_int8.py to convert to INT8 TensorRT engine")
 print("=" * 70)

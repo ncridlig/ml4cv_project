@@ -43,8 +43,8 @@ def main():
     )
     parser.add_argument(
         "--format",
-        default="yolo26",
-        help="Dataset format (default: yolo26)"
+        default="yolo11",
+        help="Dataset format"
     )
     args = parser.parse_args()
 
@@ -58,7 +58,7 @@ def main():
     # FSOCO-UBM test dataset (in-house UBM test set)
     WORKSPACE = "fsae-okyoe"
     PROJECT = "ml4cv_project"
-    VERSION = 1
+    VERSION = 2
 
     print(f"Downloading FSOCO-UBM test dataset...")
     print(f"  Workspace: {WORKSPACE}")
