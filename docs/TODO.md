@@ -1,34 +1,36 @@
 # TODO List
 
-## 📊 Current Status (2026-01-26)
+## 📊 Current Status (2026-01-27)
 
-**🎉 YOLO26n Training COMPLETE - NEW BEST MODEL!**
+**🎉 YOLO26n TWO-STAGE TRAINING IN PROGRESS!**
+
+**Test Set Performance (FSOCO-12, 689 images):**
+- **YOLO26n (BEST): 0.7626 mAP50** 🏆 ✅ (+14.6% vs UBM)
+- **YOLO12n: 0.7081 mAP50** ✅ (+6.4% vs UBM)
+- **YOLOv11n baseline: 0.7065 mAP50** ✅ (+6.2% vs UBM)
+- UBM production model: **0.6655 mAP50**
 
 **Validation Set Performance:**
-- **YOLO26n (NEW BEST): 0.7586 mAP50** 🏆 ✅
+- **YOLO26n: 0.7586 mAP50** 🏆 ✅
 - YOLO12n: **0.7127 mAP50** ✅
 - YOLOv11n baseline: **0.7140 mAP50** ✅
-- **Improvement: +6.4%** over YOLO12n!
-
-**Test Set Performance (689 images):**
-- **YOLO12n: 0.7081 mAP50** (+6.4% vs UBM) ✅
-- Our YOLOv11n baseline: **0.7065 mAP50** (+6.2% vs UBM) ✅
-- UBM production model: **0.6655 mAP50**
-- **YOLO26n: 🔄 PENDING EVALUATION**
 
 **Training Status:**
 - ✅ YOLOv11n baseline complete
 - ✅ Hyperparameter sweep complete (stopped - no improvement)
 - ✅ YOLO12n training complete (300/300 epochs)
 - ✅ YOLO12n INT8 TensorRT export complete
-- ✅ Test set evaluation complete (YOLO12, baseline, UBM)
+- ✅ Test set evaluation complete (YOLO12, baseline, UBM, YOLO26)
 - ✅ **YOLO26n training COMPLETE** (300/300 epochs) 🎉
+- ✅ **YOLO26n test evaluation COMPLETE** (0.7626 mAP50 - NEW BEST!) 🏆
+- ✅ **fsoco-ubm test set COMPLETE** (96 images, annotated, exported) ✅
+- 🔄 **YOLO26n two-stage training IN PROGRESS** (Stage 2: 8 hours remaining)
 
 **Next Immediate Actions:**
-1. 🔄 **Evaluate YOLO26 on test set** - `python3 evaluate_yolo26_test.py`
-2. 🔄 **Compare YOLO26 vs YOLO12** test results
-3. 🔄 **If YOLO26 better:** Export to INT8 and deploy
-4. 📅 Meeting with Alberto (workshop) - see goals below
+1. ⏳ **Wait for two-stage training** to complete (~8 hours)
+2. 🔄 **Evaluate two-stage YOLO26** on test set - `python3 evaluate_yolo26_two_stage_test.py`
+3. 🔄 **Benchmark all models on fsoco-ubm** (see section below)
+4. 🔄 **Compare single-stage vs two-stage YOLO26** performance
 
 ---
 
@@ -198,12 +200,107 @@ runs/detect/runs/yolo12/yolo12n_300ep_FSOCO2/weights/best.engine
 - ✅ **2.58× faster** than UBM baseline (6.78 ms)
 - ✅ **2.6% faster** than YOLOv11n production (2.70 ms)
 
-**🔄 IN PROGRESS:**
-- [ ] Create UBM test set from .avi videos (see workflow below)
+**✅ COMPLETED:**
+- [x] Create UBM test set (fsoco-ubm) - 96 images annotated and exported ✅
 
 ---
 
-## 🎯 UBM Test Set Creation Workflow (PRIORITY)
+## 🎯 fsoco-ubm Benchmarking (NEXT PRIORITY)
+
+**Status:** 🔄 READY TO START
+
+**Goal:** Benchmark all trained models on the in-house fsoco-ubm test set (96 images from car camera)
+
+**Why Important:**
+- FSOCO-12 is an internet dataset → may not represent real track conditions
+- fsoco-ubm = ground truth from actual car camera (ZED 2i stereo)
+- Tests models on real-world edge cases: lighting, motion blur, track conditions
+- Validates if FSOCO-12 performance translates to deployment
+
+### Download fsoco-ubm Dataset
+
+```bash
+source venv/bin/activate
+
+# Download dataset from Roboflow
+python3 download_fsoco_ubm.py
+
+# Dataset will be saved to: datasets/ml4cv_project-1/
+```
+
+**Dataset Info:**
+- Workspace: `fsae-okyoe`
+- Project: `ml4cv_project`
+- Version: 1
+- Size: 96 images (test-only)
+- Source: Rioveggio test track (November 20, 2025)
+- Camera: ZED 2i stereo (1280×720)
+
+### Evaluation Commands
+
+**Benchmark all models on fsoco-ubm:**
+
+```bash
+# YOLO26n (single-stage, best model)
+python3 evaluate_yolo26_fsoco_ubm.py
+
+# YOLO26n (two-stage, after training completes)
+python3 evaluate_yolo26_two_stage_fsoco_ubm.py
+
+# YOLO12n
+python3 evaluate_yolo12_fsoco_ubm.py
+
+# YOLOv11n baseline
+python3 evaluate_baseline_fsoco_ubm.py
+
+# UBM production
+python3 evaluate_ubm_fsoco_ubm.py
+```
+
+**Note:** Scripts need to be created - use existing evaluation scripts as templates.
+
+### Expected Results
+
+**Hypothesis:** Real-world mAP50 may be **lower** than FSOCO-12 due to:
+- Motion blur (car in motion)
+- Variable lighting (outdoor track, shadows)
+- Distance challenges (cones at 15-20m)
+- Occlusion (cones behind others)
+
+**Comparison Matrix:**
+
+| Model | FSOCO-12 Test | fsoco-ubm (predicted) | Delta |
+|-------|---------------|----------------------|-------|
+| YOLO26n | 0.7626 | 0.70-0.73 | -3 to -5% |
+| YOLO12n | 0.7081 | 0.65-0.68 | -3 to -5% |
+| YOLOv11n | 0.7065 | 0.64-0.67 | -3 to -5% |
+| UBM prod | 0.6655 | 0.60-0.63 | -3 to -5% |
+
+**Success Criteria:**
+- ✅ YOLO26n maintains lead over other models
+- ✅ Relative rankings preserved (YOLO26 > YOLO12 > baseline > UBM)
+- ✅ Identify challenging cases for future improvements
+
+### Deliverables
+
+**After benchmarking:**
+1. Create `docs/FSOCO_UBM_RESULTS.md` with:
+   - Per-model performance comparison
+   - FSOCO-12 vs fsoco-ubm comparison
+   - Confusion matrices and failure case analysis
+   - Recommendations for model improvements
+
+2. Update `docs/RESULTS_SUMMARY.md` with fsoco-ubm results
+
+3. Create evaluation scripts (5 scripts total)
+
+**Estimated Time:** 2-3 hours (script creation + evaluation + analysis)
+
+---
+
+## 🎯 UBM Test Set Creation Workflow (COMPLETED ✅)
+
+**Status:** ✅ COMPLETE - All 96 images annotated, exported as fsoco-ubm dataset
 
 **Goal:** Create a real-world test set from car camera data for ongoing model evaluation
 
@@ -353,37 +450,39 @@ python3 evaluate_baseline_ubm_test.py
 
 ## 📋 UBM Test Set Checklist
 
-**Phase 1: Extraction (~30 minutes)**
-- [ ] Run `extract_frames_from_avi.py` on LidarTest1 (interval=60)
-- [ ] Run `extract_frames_from_avi.py` on LidarTest2 (interval=60)
-- [ ] Verify output: ~92 images (46 stereo pairs)
-- [ ] Check image quality (no corruption, correct 1280×720 split)
+**Phase 1: Extraction (~30 minutes)** ✅ COMPLETE
+- [x] Run `extract_frames_from_avi.py` on LidarTest1 (interval=60)
+- [x] Run `extract_frames_from_avi.py` on LidarTest2 (interval=60)
+- [x] Verify output: ~96 images extracted
+- [x] Check image quality (no corruption, correct 1280×720 split)
 
-**Phase 2: Annotation (~2-3 hours)**
-- [ ] Create Roboflow project: "UBM-Rioveggio-Test-2025"
-- [ ] Upload all ~92 images
-- [ ] Configure 5 cone classes
-- [ ] Annotate all cones (~500-900 annotations)
-- [ ] Quality check all annotations
-- [ ] Export YOLOv11 format
+**Phase 2: Annotation (~2-3 hours)** ✅ COMPLETE
+- [x] Create Roboflow project: "ml4cv_project"
+- [x] Upload all 96 images
+- [x] Configure 5 cone classes
+- [x] Annotate all cones (Label Assist used)
+- [x] Quality check all annotations
+- [x] Export YOLO26 format
 
-**Phase 3: Integration (~30 minutes)**
-- [ ] Download dataset from Roboflow
-- [ ] Create data.yaml with correct paths
-- [ ] Verify dataset structure
+**Phase 3: Integration (~30 minutes)** ✅ COMPLETE
+- [x] Dataset exported from Roboflow
+- [x] Download script created: `download_fsoco_ubm.py`
+- [x] Dataset available for download
 
-**Phase 4: Evaluation (~15 minutes)**
-- [ ] Evaluate YOLO26n on UBM test set
-- [ ] Evaluate YOLO12n on UBM test set
-- [ ] Evaluate YOLOv11n baseline on UBM test set
+**Phase 4: Evaluation (~15 minutes)** 🔄 NEXT PRIORITY
+- [ ] Evaluate YOLO26n on fsoco-ubm test set
+- [ ] Evaluate YOLO12n on fsoco-ubm test set
+- [ ] Evaluate YOLOv11n baseline on fsoco-ubm test set
+- [ ] Evaluate UBM production on fsoco-ubm test set
+- [ ] Evaluate two-stage YOLO26n on fsoco-ubm test set (after training)
 
-**Phase 5: Documentation (~30 minutes)**
-- [ ] Document results: `UBM_TEST_SET_RESULTS.md`
-- [ ] Compare FSOCO-12 vs UBM performance
+**Phase 5: Documentation (~30 minutes)** 🔄 PENDING
+- [ ] Document results: `FSOCO_UBM_RESULTS.md`
+- [ ] Compare FSOCO-12 vs fsoco-ubm performance
 - [ ] Analyze edge cases and failure modes
 - [ ] Update project summary
 
-**Estimated Total Time:** 4-5 hours
+**Actual Time Spent:** 5 hours (extraction, annotation, export)
 
 **See detailed guide:** `docs/UBM_TEST_SET_EXTRACTION.md`
 
@@ -402,7 +501,53 @@ python3 evaluate_baseline_ubm_test.py
 
 ---
 
-## Current Tasks (Parallel to YOLO26 Training)
+## 🚀 Two-Stage YOLO26n Training (IN PROGRESS - 2026-01-27)
+
+**Status:** 🔄 Stage 2 running (~8 hours remaining)
+
+**Training Progress:**
+- ✅ **Stage 1 COMPLETE:** Pre-trained on cone-detector (338/400 epochs, converged)
+  - Best mAP50: 0.7339 (cone-detector validation)
+  - Status: Interrupted at epoch 338, but training plateaued (no improvement since epoch 330)
+  - Checkpoint: `runs/detect/runs/two-stage-yolo26/stage1_cone_detector_400ep2/weights/best.pt`
+- 🔄 **Stage 2 IN PROGRESS:** Fine-tuning on FSOCO-12 (300 epochs, ~8 hours remaining)
+  - Started: 2026-01-27
+  - ETA: ~8 hours
+  - W&B: `ncridlig-ml4cv/runs-two-stage-yolo26`
+
+**Rationale:**
+1. ✅ **More data:** 3× more pretraining data (22,725 vs 7,120)
+2. ✅ **Extended training:** 638 total epochs (338 + 300) vs 300 single-stage
+3. ✅ **Transfer learning:** Same cone detection task, different distributions
+4. ✅ **Perfect timing:** Stage 2 runs while annotating fsoco-ubm
+
+**Expected Results:**
+- **Target:** 0.77-0.80 mAP50 (vs 0.7626 single-stage)
+- **Best case:** > 0.78 mAP50 (+2-5% over single-stage)
+- **Conservative:** 0.76-0.77 mAP50 (+0-1% over single-stage)
+- **Worst case:** Similar to single-stage (0.76)
+
+**Commands:**
+```bash
+# Stage 2 already running with:
+python3 train_yolo26_two_stage.py --skip-stage1
+
+# After training completes (~8 hours):
+python3 evaluate_yolo26_two_stage_test.py
+```
+
+**Files Created:**
+- ✅ `train_yolo26_two_stage.py` - Two-stage training script
+- ✅ `evaluate_yolo26_two_stage_test.py` - Test set evaluation
+
+**Output:**
+- Stage 1 weights: `runs/two-stage-yolo26/stage1_cone_detector_400ep/weights/best.pt`
+- Stage 2 weights: `runs/two-stage-yolo26/stage2_fsoco12_300ep/weights/best.pt`
+- Final model: Stage 2 (if better than single-stage)
+
+---
+
+## Current Tasks (Parallel to Two-Stage Training)
 
 **While YOLO26 trains (~2.5 days):**
 

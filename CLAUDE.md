@@ -90,15 +90,16 @@ Real-time capable: 60 fps requires < 16.7 ms per frame
 
 ## Dataset
 
-### CORRECT Dataset (from thesis training notebook)
+### FSOCO-12 Dataset (Training & Testing)
 - **Source:** Roboflow
 - **Workspace:** `fmdv`
 - **Project:** `fsoco-kxq3s`
 - **Version:** 12
 - **Download script:** `python download_fsoco.py`
+- **Purpose:** Training and primary testing (FSOCO benchmark)
 
 ```python
-# Download dataset (same as thesis)
+# Download FSOCO-12 dataset
 from roboflow import Roboflow
 rf = Roboflow(api_key="YOUR_API_KEY")
 project = rf.workspace("fmdv").project("fsoco-kxq3s")
@@ -106,12 +107,63 @@ version = project.version(12)
 dataset = version.download("yolov11")
 ```
 
-### WRONG Dataset (do NOT use)
+### fsoco-ubm Dataset (Real-World Testing) ✨ NEW
+- **Source:** Roboflow (in-house UBM test set)
+- **Workspace:** `fsae-okyoe`
+- **Project:** `ml4cv_project`
+- **Version:** 1
+- **Size:** 96 images (test-only)
+- **Download script:** `python download_fsoco_ubm.py`
+- **Purpose:** Real-world validation from car camera data
+
+```python
+# Download fsoco-ubm dataset
+from roboflow import Roboflow
+rf = Roboflow(api_key="YOUR_API_KEY")
+project = rf.workspace("fsae-okyoe").project("ml4cv_project")
+version = project.version(1)
+dataset = version.download("yolo26")
+```
+
+**Dataset Details:**
+- **Date:** November 20, 2025
+- **Location:** Rioveggio test track
+- **Camera:** ZED 2i stereo (1280×720)
+- **Frames:** Extracted from ROS bag recordings (lidar1.avi, lidar2.avi)
+- **Sampling:** Every 60 frames (2 seconds real-world time at 60 FPS)
+- **Classes:** blue_cone, yellow_cone, orange_cone, large_orange_cone, unknown_cone
+- **Annotations:** Created with Roboflow Label Assist
+- **Use Case:** Validation on actual deployment conditions (motion blur, lighting, distance)
+
+**Why Important:**
+- FSOCO-12 is an internet dataset → may not match real track conditions
+- fsoco-ubm = ground truth from actual car camera
+- Tests models on real-world edge cases
+- Validates if FSOCO-12 performance translates to deployment
+
+### cone-detector Dataset (Pre-training for Two-Stage)
+- **Source:** Roboflow
 - **Workspace:** `fsbdriverless`
 - **Project:** `cone-detector-zruok`
 - **Version:** 1
-- **Size:** 22,725 images
-- **Problem:** Training on this dataset plateaus at mAP50 ≈ 0.68, far below thesis baseline (0.824)
+- **Size:** 22,725 images (3× larger than FSOCO-12)
+- **Purpose:** Stage 1 pre-training for two-stage YOLO26n
+- **Note:** Single-stage training on this dataset plateaus at mAP50 ≈ 0.68 (not suitable as final dataset)
+- **Use Case:** Pre-training provides better feature learning, then fine-tune on FSOCO-12
+
+### Training Time (RTX 4080 Super)
+
+**Two-Stage Training:**
+- **Stage 1 (cone-detector):** ~5 minutes/epoch
+  - 400 epochs = ~33 hours total
+  - Dataset: 22,725 images
+- **Stage 2 (FSOCO-12):** ~2 minutes/epoch
+  - 300 epochs = ~10 hours total
+  - Dataset: 7,120 images
+
+**Single-Stage Training:**
+- **FSOCO-12:** ~2 minutes/epoch
+  - 300 epochs = ~10 hours
 
 ---
 
@@ -177,6 +229,47 @@ yolo export model=runs/detect/train/weights/best.pt format=onnx batch=2
 
 # Export to TensorRT (on target hardware)
 trtexec --onnx=best.onnx --fp16 --saveEngine=best.engine
+```
+
+---
+
+## ⚠️ Ultralytics File Path Convention
+
+**CRITICAL:** Ultralytics adds a task prefix to all save paths!
+
+When you specify in training:
+```python
+model.train(
+    project='runs/two-stage-yolo26',
+    name='stage2a_head_only_50ep',
+    # task='detect' is auto-detected
+)
+```
+
+**Actual save path structure:**
+```
+runs/{task}/{project}/{name}/
+```
+
+**Example - what you get:**
+```
+runs/detect/runs/two-stage-yolo26/stage2a_head_only_50ep/
+         ^^^^^ task prefix added automatically!
+```
+
+**Why this matters:**
+- When loading weights, you MUST include `runs/detect/` prefix
+- Forgetting this causes `FileNotFoundError`
+- The `detect` task is added for object detection models
+
+**Correct loading:**
+```python
+model = YOLO('runs/detect/runs/two-stage-yolo26/stage2a_head_only_50ep/weights/best.pt')
+```
+
+**Common mistake:**
+```python
+model = YOLO('runs/two-stage-yolo26/stage2a_head_only_50ep/weights/best.pt')  # WRONG!
 ```
 
 ---
@@ -256,6 +349,25 @@ trtexec --onnx=best.onnx --fp16 --saveEngine=best.engine
 |------|----------|-----------|
 | 2026-01-21 | ~1.5 hrs | Project setup: cloned repos, downloaded dataset (22,725 images), created venv, wrote CLAUDE.md, IMPROVEMENT_TARGETS.md, extracted baseline metrics from Edo's thesis |
 | 2026-01-23 | ~1 hr | Discovered dataset mismatch via W&B monitoring (training plateaued at mAP50=0.68 vs expected 0.824). Created `wandb_api.py` and `download_fsoco.py`. Identified correct dataset: `fmdv/fsoco-kxq3s` version 12. |
+| 2026-01-24 | 3 hrs | Hyperparameter sweep setup and execution (W&B Bayesian optimization, 13 hyperparameters, 20 runs). Added inference optimization research. Integrated Gabriele's YOLO pipeline documentation. |
+| 2026-01-25 | 8 hrs | Trained and tested YOLO12n (mAP50 0.7081). Trained YOLO26n (mAP50 0.7626 - NEW BEST). Implemented INT8 quantization pipeline. Exported models to ONNX and TensorRT. Benchmarked inference speeds. Created documentation folder structure. |
+| 2026-01-26 | 6 hrs | UBM workshop: tested models on ASU (RTX 4060) onboard racecar. Meeting with Alberto re: custom test set and deployment. Extracted test frames from .mcap rosbag files. Started UBM in-house test dataset creation. Uploaded models to Roboflow. |
+| 2026-01-27 | 6 hrs | Created in-house UBM test dataset (fsoco-ubm): annotated 96 images in Roboflow with Label Assist, exported dataset. YOLO26n Stage 1 training ran all day (interrupted at epoch 338/400 but converged). Launched Stage 2 fine-tuning (failed due to optimizer='auto' ignoring lr0, causing catastrophic forgetting). Researched fine-tuning best practices, debugged optimizer issue, redesigned Stage 2 as two-phase fine-tuning with AdamW. |
+
+---
+
+## Daily Work Log Reminder
+
+**IMPORTANT:** Update time log DAILY at end of each work session:
+1. Record date, hours worked, and brief description
+2. Cross-reference git commits for accuracy
+3. Include: training runs, experiments, meetings, documentation, debugging
+4. Run: `git log --since="YYYY-MM-DD" --pretty=format:"%s"` to recall work done
+
+**Template:**
+```
+| YYYY-MM-DD | X hrs | Brief description of work (models trained, tests run, meetings, etc.) |
+```
 
 ---
 
@@ -441,6 +553,38 @@ python3 extract_frames_from_avi.py \
 **See:**
 - `docs/UBM_TEST_SET_EXTRACTION.md` - Complete extraction guide
 - `docs/TODO.md` - Full test set creation workflow
+
+### 🚀 Two-Stage YOLO26n Training (2026-01-26)
+
+**Status:** Ready to launch (runs parallel to UBM annotation)
+
+**Training Strategy:**
+- **Stage 1:** Pre-train on cone-detector (22,725 images, 400 epochs) - ~8 hours
+- **Stage 2:** Fine-tune on FSOCO-12 (7,120 images, 300 epochs) - ~6 hours
+- **Total:** 700 epochs over ~14 hours
+
+**Rationale:**
+1. **More data:** 3× more pretraining data provides better feature learning
+2. **Extended training:** YOLO26n loss still decreasing at 300 epochs
+3. **Transfer learning:** Same cone detection task, different distributions
+4. **Perfect timing:** GPU idle while annotating (~2-3 hours)
+
+**Expected Results:**
+- Target: **0.77-0.80 mAP50** (vs 0.7626 single-stage)
+- Conservative: 0.77-0.78 mAP50 (+1-2%)
+- Worst case: Similar to single-stage
+
+**Commands:**
+```bash
+source venv/bin/activate
+python3 train_yolo26_two_stage.py  # Interactive, ~14 hours
+python3 evaluate_yolo26_two_stage_test.py  # After training
+```
+
+**Novel Contribution:**
+- First two-stage training attempt for cone detection
+- Compares pretraining + fine-tuning vs single-stage
+- Tests if more data beats longer single-stage training
 
 ### 📅 Meeting with Alberto (Workshop)
 
