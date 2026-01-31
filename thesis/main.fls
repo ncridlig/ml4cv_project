@@ -271,8 +271,8 @@ INPUT ./chapters/background.tex
 INPUT ./chapters/background.tex
 INPUT ./chapters/background.tex
 INPUT chapters/background.tex
-INPUT /usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc
 INPUT ./chapters/methods.tex
 INPUT ./chapters/methods.tex
 INPUT ./chapters/methods.tex
