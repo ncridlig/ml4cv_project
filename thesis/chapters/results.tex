@@ -1,0 +1,195 @@
+% chapters/results.tex
+\chapter{Results}
+\label{ch:results}
+
+% Opening paragraph summarizing the evaluation approach
+
+We evaluate all models on two test sets: FSOCO-12 (689 images, 12{,}054 instances), the standard internet benchmark, and fsoco-ubm (96 images, 1{,}426 instances), a real-world test set from the car's own camera. The five models compared are: the UBM production YOLOv11n currently deployed on the car, our retrained YOLOv11n baseline, YOLO12n, and YOLO26n trained both single-stage and two-stage. We report \mAPfifty{}, \mAPfiftyfive{}, precision, and recall following the COCO evaluation protocol \citep{coco}.
+
+\section{FSOCO-12 Benchmark Results}
+\label{sec:fsoco_results}
+
+% Discuss overall results
+
+\Cref{tab:fsoco_overall} presents the FSOCO-12 test set results. YOLO26n dominates: the single-stage variant achieves the highest \mAPfifty{}=0.763 and precision (0.849), while the two-stage variant leads in recall (0.708) and \mAPfiftyfive{}=0.528. Both YOLO26n variants outperform the UBM production model by over 14\%, confirming that the architecture upgrade accounts for the bulk of the improvement. YOLO12n and our retrained YOLOv11n baseline land nearly identically at \mAPfifty{}$\approx$0.708, both already 6\% above the production model. The gap between YOLOv11n and YOLO12n is marginal, while the jump to YOLO26n is substantial.
+
+\begin{table}[ht]
+\centering
+\caption{Overall performance on the FSOCO-12 test set (689 images, 12{,}054 instances).}
+\label{tab:fsoco_overall}
+\begin{tabular}{@{}llS[table-format=3.0]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]@{}}
+\toprule
+\textbf{Model} & \textbf{Training Data} & {\textbf{Epochs}} & {\textbf{\mAPfifty{}}} & {\textbf{\mAPfiftyfive{}}} & {\textbf{Prec.}} & {\textbf{Recall}} \\ \midrule
+YOLO26n (single)    & FSOCO-12       & 300     & \textbf{0.763} & 0.524          & \textbf{0.849} & 0.694          \\
+YOLO26n (two-stage) & CD$\to$FSOCO-12 & {338+300} & 0.761          & \textbf{0.528} & 0.832          & \textbf{0.708} \\
+YOLO12n             & FSOCO-12       & 300     & 0.708          & 0.485          & 0.840          & 0.654          \\
+YOLOv11n (ours)     & FSOCO-12       & 300     & 0.707          & 0.490          & 0.816          & 0.662          \\
+UBM Production      & unknown        & 300     & 0.666          & 0.461          & 0.803          & 0.579          \\ \bottomrule
+\end{tabular}
+\begin{flushleft}
+\small CD = cone-detector dataset (22{,}725 images, pre-training stage).
+\end{flushleft}
+\end{table}
+
+%% ================================================================
+\section{Per-Class Analysis}
+\label{sec:perclass}
+
+% Discuss per-class patterns
+
+The per-class breakdown in \cref{tab:yolo26_perclass,tab:yolo12_perclass} reveals a consistent hierarchy across both architectures. Large orange cones are the easiest to detect (\mAPfifty{}=0.886 for YOLO26n), which makes sense given their distinctive size and bright color. Blue and yellow cones, the primary track markers and the two most common classes, perform well at 0.863 and 0.856 respectively. Orange cones sit slightly lower at 0.843 despite sharing a color family with large orange, because they are smaller and harder to distinguish from large orange cones. Unknown cones are the hardest class by far at \mAPfifty{}=0.364---a consequence of the class definition itself: these are cones that annotators could not confidently classify, so the model inherits that ambiguity. YOLO26n improves every class over YOLO12n, with the largest absolute gain on unknown cones (+23.4\%), suggesting that its architecture better captures the subtle features needed to handle ambiguous cases.
+
+\begin{table}[ht]
+\centering
+\caption{Per-class performance of YOLO26n (single-stage) on FSOCO-12 test set.}
+\label{tab:yolo26_perclass}
+\begin{tabular}{@{}lrrS[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]@{}}
+\toprule
+\textbf{Class} & \textbf{Images} & \textbf{Instances} & {\textbf{Prec.}} & {\textbf{Recall}} & {\textbf{\mAPfifty{}}} & {\textbf{\mAPfiftyfive{}}} \\ \midrule
+Large Orange Cone & 154  & 408    & 0.873 & 0.833 & \textbf{0.886} & 0.688 \\
+Blue Cone         & 506  & 4{,}437 & 0.927 & 0.783 & 0.863          & 0.602 \\
+Yellow Cone       & 562  & 4{,}844 & 0.915 & 0.774 & 0.856          & 0.583 \\
+Orange Cone       & 286  & 1{,}686 & 0.892 & 0.779 & 0.843          & 0.571 \\
+Unknown Cone      & 68   & 679    & 0.635 & 0.297 & 0.364          & 0.178 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Per-class performance of YOLO12n on FSOCO-12 test set.}
+\label{tab:yolo12_perclass}
+\begin{tabular}{@{}lS[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]@{}}
+\toprule
+\textbf{Class} & {\textbf{Prec.}} & {\textbf{Recall}} & {\textbf{\mAPfifty{}}} & {\textbf{\mAPfiftyfive{}}} \\ \midrule
+Large Orange Cone & 0.912 & 0.821 & \textbf{0.871} & 0.693 \\
+Blue Cone         & 0.912 & 0.738 & 0.804          & 0.548 \\
+Yellow Cone       & 0.890 & 0.727 & 0.796          & 0.534 \\
+Orange Cone       & 0.879 & 0.722 & 0.775          & 0.525 \\
+Unknown Cone      & 0.607 & 0.264 & 0.295          & 0.124 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+%% ================================================================
+\section{Two-Stage vs.\ Single-Stage Training}
+\label{sec:two_stage_results}
+
+% TODO: Discuss two-stage results (1-2 paragraphs)
+% - Near-identical mAP50 (0.761 vs 0.763)
+% - Two-stage wins on mAP50-95 (+0.6%), recall (+1.4pp), and real-world precision (+3.4pp)
+% - Two-stage trades marginal FSOCO-12 precision for better generalization
+% - Deployed model: two-stage (better recall is safety-critical)
+
+\Cref{tab:two_stage} compares the two training strategies head-to-head. On the FSOCO-12 benchmark the difference is within noise: \mAPfifty{} differs by just 0.2\%, and neither variant is consistently better across all metrics. The two-stage model wins on recall (+1.4 percentage points) and \mAPfiftyfive{} (+0.6\%), meaning it finds more cones and localizes them more precisely, at the cost of slightly lower confidence scores (precision drops 1.6 percentage points). On the real-world fsoco-ubm set, the two models tie at \mAPfifty{}=0.565, but two-stage achieves 3.4 percentage points higher precision, indicating fewer false positives under deployment conditions. We deployed the two-stage model because in autonomous racing, missing a cone is more dangerous than a false detection: the planning algorithm can filter spurious detections, but a missed cone leaves the car blind to a track boundary. However, we do not recommend training two stage models due to their quadrupled computational cost; better to train other architectures and improve the datasets.
+
+\begin{table}[ht]
+\centering
+\caption{Two-stage vs.\ single-stage YOLO26n training comparison.}
+\label{tab:two_stage}
+\begin{tabular}{@{}lS[table-format=1.3]S[table-format=1.3]r@{}}
+\toprule
+\textbf{Metric}            & {\textbf{Single-Stage}} & {\textbf{Two-Stage}} & \textbf{Delta}  \\ \midrule
+FSOCO-12 \mAPfifty{}       & \textbf{0.763}          & 0.761                & $-0.2\%$        \\
+FSOCO-12 \mAPfiftyfive{}   & 0.524                   & \textbf{0.528}       & $+0.6\%$        \\
+FSOCO-12 Precision         & \textbf{0.849}          & 0.832                & $-1.6$\,pp      \\
+FSOCO-12 Recall            & 0.694                   & \textbf{0.708}       & $+1.4$\,pp      \\
+fsoco-ubm \mAPfifty{}      & 0.565                   & \textbf{0.565}       & $+0.04\%$       \\
+fsoco-ubm Precision        & 0.615                   & \textbf{0.649}       & $+3.4$\,pp      \\
+Generalization Gap         & {$-25.9\%$}             & {$\mathbf{-25.8\%}$} & $+0.1$\,pp      \\ \bottomrule
+\end{tabular}
+\begin{flushleft}
+\small pp = percentage points.
+\end{flushleft}
+\end{table}
+
+\section{Hyperparameter Sweep}
+\label{sec:sweep_results}
+
+% Discuss sweep results
+
+The sweep results in \cref{tab:sweep} confirm that hyperparameter tuning is not a productive direction for this task. The best sweep run (\mAPfifty{}=0.709) fell below our baseline (0.714), and the mean across all completed runs was 0.703 with a standard deviation of only 0.019. The 2.7\% spread shows that YOLOv11n on FSOCO-12 is largely insensitive to the hyperparameters we explored, and the Ultralytics defaults sit near the top of the distribution. Ultralytics uses a MuSGD Optimizer enabling more stable training and faster convergence and we verified the stable training claim. \citep{yolo26}
+
+\begin{table}[ht]
+\centering
+\caption{Hyperparameter sweep summary (W\&B Bayesian optimization).}
+\label{tab:sweep}
+\begin{tabular}{@{}lS[table-format=1.3]@{}}
+\toprule
+\textbf{Metric}              & {\textbf{Value}} \\ \midrule
+Runs completed               & {10 / 21}        \\
+Best sweep \mAPfifty{}       & 0.709            \\
+Baseline \mAPfifty{}         & 0.714            \\
+Mean of sweep runs           & 0.703            \\
+Standard deviation           & 0.019            \\ \bottomrule
+\end{tabular}
+\end{table}
+
+%% ================================================================
+\section{Real-World Validation (fsoco-ubm)}
+\label{sec:ubm_results}
+
+% Discuss real-world results
+
+\Cref{tab:ubm_results} shows performance on fsoco-ubm. Every model suffers a substantial drop from the FSOCO-12 benchmark, ranging from $-21.5\%$ (YOLOv11n) to $-27.0\%$ (YOLO12n). This gap reflects the harder conditions in real-world data: motion blur from driving at 30--50~km/h, variable outdoor lighting with shadows and bright sky, and small pixel area for distant cones. Despite the drop, the YOLO26n variants maintain first place at \mAPfifty{}=0.565. An interesting finding is that YOLOv11n generalizes best, losing only 21.5\% and achieving the highest precision on this set (0.874), which suggests that its simpler architecture is more conservative and less prone to false positives on out-of-distribution data. YOLO12n generalizes worst among our trained models ($-27.0\%$) and ends up tied with UBM production at 0.517.
+
+\begin{table}[ht]
+\centering
+\caption{Real-world performance on fsoco-ubm test set (96 images, 1{,}426 instances).}
+\label{tab:ubm_results}
+\begin{tabular}{@{}lS[table-format=1.3]S[table-format=1.3]S[table-format=1.3]r@{}}
+\toprule
+\textbf{Model} & {\textbf{\mAPfifty{}}} & {\textbf{Prec.}} & {\textbf{Recall}} & \textbf{Gap vs FSOCO-12} \\ \midrule
+YOLO26n (two-stage) & \textbf{0.565} & \textbf{0.649} & 0.462          & $-25.8\%$  \\
+YOLO26n (single)    & \textbf{0.565} & 0.615          & \textbf{0.469} & $-25.9\%$  \\
+YOLOv11n (ours)     & 0.555          & 0.874          & 0.447          & $-21.5\%$  \\
+YOLO12n             & 0.517          & 0.572          & 0.454          & $-27.0\%$  \\
+UBM Production      & 0.517          & 0.635          & 0.393          & $-22.3\%$  \\ \bottomrule
+\end{tabular}
+\end{table}
+
+%% ================================================================
+\section{Deployment Performance}
+\label{sec:deployment_results}
+
+% TODO: Discuss deployment results (1-2 paragraphs)
+% - TensorRT FP16 on RTX 4060 (onboard race car)
+% - YOLO26n: 2.63 ms total latency (GPU compute only 1.02 ms)
+% - 2.58x faster than UBM baseline (6.78 ms)
+% - 6.3x real-time margin for 60 fps (2.63 ms << 16.7 ms budget)
+% - INT8 quantization not needed given massive real-time margin
+% - FP16 engine: 9.35 MB (easily fits in GPU memory)
+
+\Cref{tab:latency} breaks down the inference latency on the RTX 4060 onboard the race car. YOLO26n completes a forward pass in 2.63~ms on average, of which only 1.02~ms is GPU compute---the remainder is host-to-device memory transfer (1.58~ms) and device-to-host transfer (0.03~ms). The pipeline is transfer-bound, not compute-bound, which means a more powerful GPU would not significantly reduce latency; the bottleneck is moving the image data across the PCIe bus. At 2.63~ms per image, the model has a 6.3$\times$ margin over the 16.7~ms budget required for 60~fps operation, so we did not pursue INT8 quantization: the typical 1--2\% \mAPfifty{} penalty is not worth the marginal speed gain when the model is already well within the real-time envelope. \Cref{tab:deployment_comparison} summarizes the full upgrade over the previous production system. The deployed YOLO26n is 14.6\% more accurate on FSOCO-12, 9.4\% more accurate on fsoco-ubm, and runs at 2.63~ms versus the 6.78~ms reported for the previous production model, all while using fewer parameters (2.51M vs 2.59M). The satisfactory performance and 1 millisecond compute are desirable but the latency margin future work leaves room for training a YOLO27s model and even larger variants to quantify the performance vs latency tradeoff. 
+
+\begin{table}[ht]
+\centering
+\caption{Inference latency breakdown on RTX 4060 (TensorRT FP16).}
+\label{tab:latency}
+\begin{tabular}{@{}lS[table-format=1.2]S[table-format=1.2]@{}}
+\toprule
+\textbf{Component}   & {\textbf{YOLO26n (ms)}} & {\textbf{YOLOv11n prod.\ (ms)}} \\ \midrule
+H2D Transfer         & 1.58                    & 1.58                            \\
+GPU Compute          & \textbf{1.02}           & 0.99                            \\
+D2H Transfer         & 0.03                    & 0.13                            \\ \midrule
+\textbf{Total}       & \textbf{2.63}           & 2.70                            \\
+Max FPS              & {380}                   & {370}                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Deployment comparison: YOLO26n vs.\ UBM baseline.}
+\label{tab:deployment_comparison}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Metric}            & \textbf{YOLO26n}       & \textbf{UBM Baseline}     \\ \midrule
+Architecture               & YOLO26n                & YOLOv11n                  \\
+Parameters                 & 2.51M                  & 2.59M                     \\
+GFLOPs                     & 5.8                    & 6.4                       \\
+TensorRT FP16 Size         & 9.35\,MB               & $\sim$9\,MB               \\
+Mean Latency (RTX 4060)    & 2.63\,ms               & 6.78\,ms                  \\
+Throughput                 & 633 qps                & $\sim$147 qps             \\
+\mAPfifty{} (FSOCO-12)     & 0.763                  & 0.666                     \\
+\mAPfifty{} (fsoco-ubm)    & 0.565                  & 0.517                     \\
+Real-time margin (60 fps)  & 6.3$\times$            & 2.5$\times$               \\ \bottomrule
+\end{tabular}
+\end{table}

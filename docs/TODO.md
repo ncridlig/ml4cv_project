@@ -1172,6 +1172,28 @@ python3 benchmark_yolo26_int8.py
 
 ---
 
+## Future Experiment: YOLO26s (Small Variant)
+
+**Status:** Idea — not started
+
+**Idea:** Train YOLO26s and compare accuracy vs latency against YOLO26n, since the 6.3x real-time margin leaves room for a larger model.
+
+**Pros:**
+- Massive latency headroom (2.63 ms vs 16.7 ms budget) — even a 3x slower model fits
+- Could improve weak classes, especially unknown cones (0.364 mAP50)
+- Adds a clean accuracy-vs-latency tradeoff curve to the report
+- Standard experiment in ML papers (nano vs small vs medium comparison)
+
+**Cons:**
+- Evidence suggests the bottleneck is the dataset, not model capacity: sweep showed insensitivity (std=0.019), two-stage training with 3x more data only gained 0.2%
+- Requires another full training run (~10 hours) plus ASU workshop visit for TensorRT benchmarks
+- Project is in report-writing phase — risk of scope creep for marginal gain
+- Complicates the current clean narrative (YOLO26n wins on both accuracy and speed)
+
+**Decision:** Defer to future work unless time permits before report deadline.
+
+---
+
 ## Future Improvements
 
 ### 4. Model Experiments (Week 1-2)

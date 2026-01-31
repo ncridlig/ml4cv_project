@@ -1,0 +1,33 @@
+% main.tex — ML4CV 3 CFU Project Report
+% Compile: pdflatex main && bibtex main && pdflatex main && pdflatex main
+\documentclass[12pt,a4paper,oneside]{report}
+
+\input{preamble}
+
+\begin{document}
+
+% --- Front matter ---
+\input{titlepage}
+
+\input{abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+% --- Main chapters ---
+\input{chapters/introduction}
+\input{chapters/background}
+\input{chapters/methods}
+\input{chapters/results}
+\input{chapters/conclusion}
+
+% --- Back matter ---
+\appendix
+\input{chapters/appendixA}
+
+\nocite{*} % TODO: Remove this line once you add \cite{} calls in the text
+\bibliographystyle{plainnat}
+\bibliography{bibliography}
+
+\end{document}

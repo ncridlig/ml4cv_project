@@ -1,0 +1,18 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Hardware used for training and deployment.}}{13}{table.caption.6}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Datasets used in this project.}}{14}{table.caption.7}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Architecture specifications for the three evaluated models.}}{17}{table.caption.9}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Overall performance on the FSOCO-12 test set (689 images, 12{,}054 instances).}}{19}{table.caption.11}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Per-class performance of YOLO26n (single-stage) on FSOCO-12 test set.}}{20}{table.caption.12}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Per-class performance of YOLO12n on FSOCO-12 test set.}}{20}{table.caption.13}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Two-stage vs.\ single-stage YOLO26n training comparison.}}{21}{table.caption.14}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Hyperparameter sweep summary (W\&B Bayesian optimization).}}{21}{table.caption.15}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Real-world performance on fsoco-ubm test set (96 images, 1{,}426 instances).}}{22}{table.caption.16}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Inference latency breakdown on RTX 4060 (TensorRT FP16).}}{23}{table.caption.17}%
+\contentsline {table}{\numberline {4.8}{\ignorespaces Deployment comparison: YOLO26n vs.\ UBM baseline.}}{23}{table.caption.18}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {A.1}{\ignorespaces Two-stage training configuration.}}{28}{table.caption.19}%

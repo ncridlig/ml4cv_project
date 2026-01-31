@@ -1,0 +1,55 @@
+% chapters/background.tex
+\chapter{Background}
+\label{ch:background}
+
+\section{Object Detection with YOLO}
+\label{sec:yolo}
+
+% General YOLO introduction
+YOLO (You Only Look Once) is a family of real-time object detection models first introduced by \citet{redmon2016yolo} and now maintained by Ultralytics \citep{yolov8}. Unlike two-stage detectors that first propose regions and then classify them, YOLO performs detection in a single forward pass through the network, which is what makes it fast enough for our use case. Over the past decade the architecture has evolved considerably: modern variants use anchor-free detection heads, feature pyramid networks for multi-scale prediction, and CSP (Cross Stage Partial) backbones for efficient feature extraction. We evaluated three successive generations of nano-sized YOLO models, each offering a different trade-off between accuracy and computational cost.
+
+\subsection{YOLOv11}
+\label{subsec:yolov11}
+
+% YOLOv11 overview
+YOLOv11 was released in 2024 by Ultralytics \citep{yolov11} and is the architecture currently deployed on the UBM race car. It introduces C3k2 backbone blocks, a Spatial Pyramid Pooling Fast (SPPF) layer, and C2PSA attention modules. The nano variant has 2.59M parameters and 6.4 GFLOPs. This is our baseline: every other model in this report is measured against it.
+
+\subsection{YOLO12}
+\label{subsec:yolo12}
+
+% YOLO12 overview
+YOLO12, published in January 2025 by \citet{yolo12}, replaces the CSP backbone with R-ELAN (Residual Efficient Layer Aggregation Network) and introduces an area-attention mechanism that captures global context without the quadratic cost of standard self-attention. The nano variant sits at 2.56M parameters and 6.3 GFLOPs, marginally smaller than YOLOv11n. We tested it as a potential drop-in upgrade since the parameter count and inference profile are nearly identical.
+
+\subsection{YOLO26}
+\label{subsec:yolo26}
+
+% YOLO26 overview
+YOLO26 is the most recent release from Ultralytics at the time of writing \citep{yolo26}. Its nano variant is the smallest of the three we evaluated: 2.51M parameters and 5.8 GFLOPs. The reduction in both parameters and floating point operations translates directly to faster inference, which is a key priority for deploying the model. It also eliminates the non-maximum suppression (NMS) post-processing step, further reducing latency.
+
+\section{Transfer Learning and Catastrophic Forgetting}
+\label{sec:transfer}
+
+% Transfer learning concepts
+Transfer learning is the practice of pre-training a model on a large dataset and then fine-tuning it on a smaller, task-specific one. In our case, we pre-train on the 22{,}725 image cone-detector dataset \citep{cone_detector} and then fine-tune on the 9{,}778 image FSOCO-12 dataset \citep{fsoco12}. The idea is that the model learns general cone features during pre-training and refines them during fine-tuning.
+
+The main risk with this approach is catastrophic forgetting \citep{catastrophic_forgetting}: the model overwrites the useful features it learned during pre-training when exposed to the new dataset. In our first fine-tuning attempt, validation \mAPfifty{} dropped from 0.7536 to 0.6278 in just two epochs---a 16.7\% collapse---before slowly recovering over 38 epochs. The root cause was Ultralytics' \texttt{optimizer='auto'} default, which silently ignored our specified learning rate of 0.001 and instead used a hardcoded 0.01 (10$\times$ too high for fine-tuning). The framework's internal heuristic selects SGD with fixed hyperparameters whenever the total iteration count exceeds 10{,}000, regardless of user settings. We resolved this by explicitly setting \texttt{optimizer='AdamW'} \citep{adamw}, which decouples weight decay from the gradient update and respects the user-specified learning rate. We also adopted a two-phase strategy: first training only the detection head with frozen backbone layers, then unfreezing all layers with a 100$\times$ lower learning rate and 20\% warmup. This eliminated the forgetting entirely. The full debugging process is documented in \cref{app:optimizer_bug}.
+
+\section{Model Optimization for Edge Deployment}
+\label{sec:optimization}
+
+% ONNX and TensorRT overview
+The models are trained in PyTorch but deployed through a multi-stage optimization pipeline. First, the trained weights are exported to ONNX (Open Neural Network Exchange) \citep{onnx}, a hardware-agnostic intermediate representation. Then, NVIDIA TensorRT \citep{tensorrt} compiles the ONNX graph into an optimized engine for the target GPU. TensorRT applies several automatic optimizations: kernel fusion combines sequences of operations (e.g.\ Conv$+$BatchNorm$+$ReLU) into a single GPU kernel to reduce memory bandwidth and kernel launch overhead, and precision reduction converts FP32 weights to FP16 or INT8 to exploit the GPU's dedicated Tensor Cores. INT8 quantization requires a calibration dataset of 500--1{,}000 representative images to determine the optimal scaling factors, and typically incurs a 2--3\% \mAPfifty{} drop compared to FP16.
+
+One important constraint is that TensorRT engines are tied to the specific GPU architecture they are built on. An engine compiled for the RTX 4080 Super (training machine) will not run on the RTX 4060 (race car). We therefore build the final engine directly on the car's ASU (Autonomous System Unit). In our case, FP16 precision was sufficient: the resulting 2.63~ms inference time leaves a 6.3$\times$ margin over the 60~fps requirement, making INT8 quantization unnecessary and its accuracy penalty avoidable.
+
+\section{Formula Student Driverless Perception}
+\label{sec:fsd}
+
+% Perception pipeline overview
+The perception pipeline, as designed by \citet{fusa2025}, is built around a ZED 2i stereo camera \citep{zed2i} operating at 1280$\times$720 resolution and 30~fps but with the capability of operating at 60~fps, awaiting testing. The YOLO detector runs on each frame to produce 2D bounding boxes for five cone classes defined by the FSAE Driverless rules \citep{fsae_rules}: small blue cones mark the left track border, small yellow cones mark the right border, small orange cones delineate entry and exit lanes, and large orange cones are placed before and after start, finish, and timekeeping lines. A fifth class, ``unknown,'' is used for ambiguous or occluded cones that cannot be confidently classified. These detections are then matched across the stereo pair and triangulated to produce 3D positions relative to the car. The entire pipeline must complete within 16.7~ms per frame to maintain the 60~fps loop rate; any excess time taken by detection directly reduces the budget available for planning and control downstream.
+
+\section{Related Work}
+\label{sec:related}
+
+% Related work
+The FSOCO (Formula Student Objects in Context) dataset \citep{fsoco} is a community-maintained benchmark for cone detection, contributed by multiple Formula Student teams. It provides a shared evaluation standard, though the images come from a variety of cameras and conditions that may not match any single team's deployment setup. Most teams in the Driverless competition use some variant of YOLO, trained on FSOCO or private datasets, and evaluate using the standard COCO metrics \citep{coco}: \mAPfifty{} (intersection-over-union threshold of 0.5) and \mAPfiftyfive{} (averaged over thresholds from 0.5 to 0.95). The prior work at UBM is documented in the thesis by \citet{fusa2025}, which established the YOLOv11n baseline and the stereo matching pipeline we build upon. That thesis reports \mAPfifty{}=0.824 on the FSOCO validation set, though as we discuss in \cref{ch:results}, we were unable to reproduce this figure with the available training configuration.

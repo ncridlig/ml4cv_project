@@ -1,0 +1,130 @@
+% chapters/methods.tex
+\chapter{Methods}
+\label{ch:methods}
+
+\section{Experimental Setup}
+\label{sec:setup}
+
+% Describe hardware and software setup
+Github makes software production on concurrent machines easy, we used a M1 Macbook Air to iterate on the existing inference pipeline: 'ubm-yolo-detector'. We also used an Ubuntu workstation with a Nvidia 4080 Super for development inside a new repository: 'ml4cv-project'. The existing inference pipeline, 'ubm-yolo-detector', enforced the decision to use Ultralytics models within the ultralytics library, as we considered it important to slot the new model in the existing modular framework. Ultralytics facilitated training, validation, and export and should remain part of the framework. For visualization, we used Weights and Biases (wandb) \citep{wandb} for experiment tracking and comparison. The Autonomous System Unit (ASU) listens to control commands, sends them to the racecar's control unit and listens for mission parameters. It is a water-cooled desktop station running Ubuntu OS with the Robot Operating System 2 (ROS2) framework and has a 500w power budget \citep{fusa2025}. For our purposes, we care only about its GPU, a Nvidia 4060.
+
+\begin{table}[ht]
+\centering
+\caption{Hardware used for training and deployment.}
+\label{tab:hardware}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Machine}    & \textbf{Purpose}          & \textbf{GPU}              & \textbf{OS}    \\ \midrule
+M1 MacBook          & Code development          & CPU only                  & macOS          \\
+Ubuntu Workstation   & Training \& testing       & RTX 4080 Super (CUDA)     & Ubuntu         \\
+ASU (Race Car)       & Deployment                & RTX 4060                  & Ubuntu (ROS2)  \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\section{Datasets}
+\label{sec:datasets}
+
+% Describe each dataset and its role
+We used three datasets, summarized in \cref{tab:datasets}. FSOCO-12 \citep{fsoco12} is the primary training and benchmarking dataset. The cone-detector dataset \citep{cone_detector} is a larger collection used exclusively for pre-training in the two-stage strategy. Finally, fsoco-ubm is a small test set we created from the car's own camera to validate whether benchmark results translate to the real world.
+
+\begin{table}[ht]
+\centering
+\caption{Datasets used in this project.}
+\label{tab:datasets}
+\begin{tabular}{@{}lrrll@{}}
+\toprule
+\textbf{Dataset}   & \textbf{Images} & \textbf{Instances} & \textbf{Split}    & \textbf{Purpose}             \\ \midrule
+FSOCO-12 (train)   & 7{,}120         & $\sim$78{,}000     & Train             & Primary training             \\
+FSOCO-12 (val)     & 1{,}968         & $\sim$36{,}000     & Validation        & Model selection              \\
+FSOCO-12 (test)    & 689             & 12{,}054           & Test              & Standard benchmark           \\
+cone-detector      & 22{,}725        & $\sim$200{,}000    & Train             & Stage~1 pre-training         \\
+fsoco-ubm          & 96              & 1{,}426            & Test              & Real-world validation        \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{FSOCO-12}
+\label{subsec:fsoco}
+
+% Describe FSOCO dataset
+FSOCO-12 (Formula Student Objects in Context, version 12) is a community-curated dataset hosted on Roboflow \citep{fsoco12, fsoco}. It contains 9{,}777 images split into train (7{,}120), validation (1{,}968), and test (689) sets, with approximately 126{,}000 cone instances across the five FSAE classes. The images come from multiple Formula Student teams and cover diverse lighting, weather, and track conditions at variable resolutions. The class distribution is imbalanced: yellow and blue cones dominate ($\sim$77\% of test instances), while unknown cones account for only 5.6\% and are the hardest to detect. We use the test set (689 images, 12{,}054 instances) as our primary benchmark throughout this report.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{fsoco_dataset_labels.png}
+\caption{Class distribution in the FSOCO-12 dataset.}
+\label{fig:fsoco_labels}
+\end{figure}
+
+\subsection{cone-detector}
+\label{subsec:cone_detector}
+
+% Describe cone-detector dataset
+The cone-detector dataset \citep{cone_detector} contains 22{,}725 images with the same five cone classes as FSOCO-12, making it 2.3$\times$ larger. It is also a community dataset from Roboflow, contributed by a different Formula Student team. Training a model from scratch on this dataset alone plateaus at \mAPfifty{}$\approx$0.68, which is worse than our FSOCO-12 baseline. However, the volume of data makes it useful for pre-training: the model can learn general cone features from a larger and more varied pool before fine-tuning on the curated FSOCO-12 set. We used it exclusively for Stage~1 of the two-stage training strategy described in \cref{sec:two_stage}.
+
+\subsection{fsoco-ubm: Real-World Test Set}
+\label{subsec:fsoco_ubm}
+
+% Describe the in-house UBM test set
+FSOCO-12 is an internet dataset assembled from many teams and cameras, so good performance on it does not guarantee good performance on our car. To address this, we created fsoco-ubm: a 96-image test set extracted directly from the ZED 2i stereo camera on the UBM race car. The images were recorded on November 20, 2025 at the Rioveggio test track during driving runs at 30--50~km/h. We extracted one frame every 60 frames from the stereo video (one sample every two seconds of real-world time), split the 2560$\times$720 stereo pairs into left and right images of 1280$\times$720, and annotated them using Roboflow Label Assist with manual review.
+
+The dataset contains 1{,}426 cone instances across the five classes. The distribution differs from FSOCO-12: yellow (53.2\%) and blue (40.4\%) cones dominate, large orange cones appear in small numbers (4.6\%), and orange cones are nearly absent (0.6\%). The real-world conditions introduce challenges not present in the internet benchmark: motion blur from the moving car, variable outdoor lighting with shadows and bright sky, small pixel area for distant cones, and color desaturation that makes cone classification harder even when the cone is detected. We use fsoco-ubm strictly as a held-out test set and never for training. Future work expanding on this dataset is encouraged.
+
+\section{Baseline Reproduction}
+\label{sec:baseline}
+
+% Describe baseline training
+Our first step was to reproduce the baseline from Fusa's thesis \citep{fusa2025}, which reports \mAPfifty{}=0.824 for YOLOv11n on FSOCO. We trained YOLOv11n for 300 epochs on FSOCO-12 using Ultralytics default hyperparameters (AdamW optimizer, lr0=0.01, batch 64, 640$\times$640 input, default augmentation with mosaic=1.0, mixup=0.0). The model converged around epoch 200 and plateaued at \mAPfifty{}=0.714 on the validation set, 13.4\% below the thesis claim.
+
+We contacted the thesis author, who confirmed that the reported results were produced by other team members (Gabriele and Patta) using an unknown ``particular dataset'' and training configuration that was subsequently lost. The production model currently deployed on the car, which we evaluated independently on the FSOCO-12 test set, achieves only \mAPfifty{}=0.666. Our baseline therefore already exceeds the production model by 6.2\%, and we adopt \mAPfifty{}=0.707 (test set) as the reproducible reference point for all subsequent experiments.
+
+\section{Hyperparameter Sweep}
+\label{sec:sweep}
+
+% Describe W\&B Bayesian sweep
+To determine whether the baseline could be improved through hyperparameter tuning, we ran a Bayesian optimization sweep using Weights \& Biases \citep{wandb, bayesian_optimization}. The sweep explored 13 hyperparameters: learning rate (lr0, lrf), momentum, weight decay, warmup epochs, close mosaic epoch, dropout, and six augmentation parameters (hsv\_h, hsv\_s, hsv\_v, mosaic, mixup, copy\_paste). Each run trained for 100 epochs on FSOCO-12 with YOLOv11n.
+
+Of 21 planned runs, 10 completed successfully and 11 crashed. The crashes were strongly correlated with aggressive augmentation: crashed runs had 4$\times$ higher mixup (0.197 vs 0.049) and nearly 2$\times$ higher dropout (0.156 vs 0.081) on average. High mixup creates heavily blended training images that, combined with high dropout, introduce too much regularization for the model to converge. Among the 10 completed runs, the best achieved \mAPfifty{}=0.709, which is 0.7\% \emph{worse} than our baseline. The mean across all runs was 0.703, with a standard deviation of only 0.019 (2.7\% of baseline). No run improved over the defaults. This narrow variance demonstrates that YOLOv11n on FSOCO-12 is largely insensitive to these hyperparameters, and that the Ultralytics defaults---which disable both mixup and dropout by default---are already near-optimal. While this sweep does not constitute a formal hypothesis test, the absence of any improvement and the low variance across runs provide strong evidence that further gains are unlikely to come from hyperparameter tuning alone. We stopped the sweep and pivoted to architecture changes.
+
+\section{Architecture Evaluation}
+\label{sec:architecture}
+
+% Describe architecture comparison methodology
+Since hyperparameter tuning proved ineffective, we evaluated whether newer architectures could break through the YOLOv11n performance ceiling. We trained YOLO12n \citep{yolo12} and YOLO26n \citep{yolo26} under identical conditions: FSOCO-12 dataset, 300 epochs, batch 64, Ultralytics default hyperparameters. All three models are nano variants with comparable parameter counts (2.51--2.59M) and GFLOPs (5.8--6.4), as shown in \cref{tab:architectures}, making the comparison fair with respect to model capacity. YOLO12n finished at \mAPfifty{}=0.708 on the test set, a marginal gain over YOLOv11n (0.707). YOLO26n reached \mAPfifty{}=0.763, a substantial 7.9\% improvement over our baseline and 14.6\% over the UBM production model. Every class improved, with the largest absolute gains on unknown cones (+23.4\%) and orange cones (+6.8\%). The results confirmed that for this task, architecture matters more than hyperparameter tuning: YOLO26n with default parameters outperformed every sweep run by a wide margin.
+
+\begin{table}[ht]
+\centering
+\caption{Architecture specifications for the three evaluated models.}
+\label{tab:architectures}
+\begin{tabular}{@{}lS[table-format=1.2]S[table-format=1.1]l@{}}
+\toprule
+\textbf{Model}  & {\textbf{Params (M)}} & {\textbf{GFLOPs}} & \textbf{Year} \\ \midrule
+YOLOv11n        & 2.59                  & 6.4               & 2024          \\
+YOLO12n         & 2.56                  & 6.3               & 2025          \\
+YOLO26n         & 2.51                  & 5.8               & 2025          \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\section{Two-Stage Training Strategy}
+\label{sec:two_stage}
+
+% Describe two-stage training
+Given that YOLO26n achieved the best single-stage result, we investigated whether pre-training on a larger dataset could push it further. The cone-detector dataset \citep{cone_detector} contains 22{,}725 images with the same five classes as FSOCO-12, providing 2.3$\times$ more training data. Both datasets target the same task---cone detection---so the domain gap is small, which makes transfer learning viable. The hypothesis was that the model would learn more robust cone features from the larger pool and then refine them on the curated FSOCO-12 distribution.
+
+Stage~1 pre-trained YOLO26n on cone-detector starting from COCO-pretrained weights. Training was planned for 400 epochs but the loss converged early and we stopped at epoch 338, achieving \mAPfifty{}=0.734 on the cone-detector validation set. Stage~2 fine-tuned the Stage~1 checkpoint on FSOCO-12 for 300 additional epochs. Our first attempt at Stage~2 failed: the model's \mAPfifty{} dropped from 0.754 to 0.628 in just two epochs---catastrophic forgetting \citep{catastrophic_forgetting}. The root cause was Ultralytics' \texttt{optimizer='auto'} default, which silently replaced our specified learning rate of 0.001 with a hardcoded 0.01, as detailed in \cref{app:optimizer_bug}.
+
+We redesigned Stage~2 as a two-phase process using explicit AdamW \citep{adamw}. Phase~2A froze the first 10 backbone layers and trained only the detection head for 50 epochs with lr=0.001 and 20\% warmup (10 epochs), allowing the head to adapt to the FSOCO-12 distribution without disturbing the pre-trained features. Phase~2B then unfroze all layers for 250 epochs with an ultra-low learning rate of 0.00005 (100$\times$ lower than training from scratch) and 50 epochs of warmup, using cosine annealing for a smooth decay. This eliminated the forgetting entirely: validation \mAPfifty{} improved monotonically throughout Stage~2 and converged at 0.761 on the FSOCO-12 test set, comparable to the single-stage result (0.763) but with better recall and real-world precision, as we discuss in \cref{ch:results}. The results however, do not encourage two-stage retraining due to the modest performance increase tradeoff with much longer computational effort.
+
+\section{Deployment Pipeline}
+\label{sec:deployment}
+
+% Describe ONNX and TensorRT export
+The trained PyTorch model is deployed through a three-step export pipeline. First, the \texttt{best.pt} checkpoint is exported to ONNX \citep{onnx} with a fixed batch size of 2 (two images in a stereo pair). Then, on the ASU itself, the ONNX graph is compiled into a TensorRT FP16 engine \citep{tensorrt} using \texttt{trtexec}. Building the engine on the target hardware is mandatory because TensorRT optimizes kernel selection and memory layout for the specific GPU architecture (RTX~4060).
+
+The C++ ROS2 inference node (\texttt{ros\_yolo\_detector\_node}) receives stereo image pairs from the ZED~2i camera topic and runs YOLO inference on the left and right frames in parallel using two threads. The resulting bounding box vectors are sorted by center coordinates and matched across the stereo pair using a distance and similarity criterion, followed by feature matching for robust association. Matched detections are triangulated into 3D positions in the camera coordinate frame and then transformed into the vehicle frame (FLU convention) for downstream SLAM consumption. The node publishes both an annotated image with bounding box overlays and a \texttt{DetectionInfosArray} message containing 3D coordinates and confidence scores. We lowered the detection confidence threshold from the default 0.5 to 0.35, which improved \mAPfifty{} on fsoco-ubm by 10\% by recovering additional true positives at the cost of a marginal increase in false detections. This parameter as well as the NMS threshold are modifiable without recompiling and can be tuned further on the track.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.75\textwidth]{Existing_3D_View.png}
+\caption{3D visualization of detected cones from the stereo pipeline.}
+\label{fig:3d_view}
+\end{figure}

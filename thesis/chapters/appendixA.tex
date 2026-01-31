@@ -1,0 +1,93 @@
+% chapters/appendixA.tex
+\chapter{Technical Details}
+\label{app:technical}
+
+\section{Hyperparameter Sweep Configuration}
+\label{app:sweep}
+
+% TODO: Include the W&B sweep YAML configuration (1 listing)
+% - 13 hyperparameters: lr0, lrf, momentum, weight_decay, warmup_epochs,
+%   warmup_momentum, box, cls, dfl, hsv_h, hsv_s, hsv_v, mosaic
+% - Bayesian optimization method
+% - Include ranges for each parameter
+
+\begin{lstlisting}[style=yaml, caption={W\&B Bayesian sweep configuration.}, label={lst:sweep}]
+# TODO: Paste actual sweep YAML from wandb_sweep.yaml
+method: bayes
+metric:
+  name: metrics/mAP50(B)
+  goal: maximize
+parameters:
+  lr0:
+    min: 0.001
+    max: 0.05
+  momentum:
+    min: 0.8
+    max: 0.98
+  # ... (add remaining 11 parameters)
+\end{lstlisting}
+
+\section{Two-Stage Training Hyperparameters}
+\label{app:two_stage_params}
+
+% TODO: Document exact training parameters for both stages
+
+\begin{table}[ht]
+\centering
+\caption{Two-stage training configuration.}
+\label{tab:two_stage_config}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Parameter}  & \textbf{Stage 1 (cone-detector)} & \textbf{Stage 2 (FSOCO-12)} \\ \midrule
+Dataset             & cone-detector (22{,}725 imgs)    & FSOCO-12 (5{,}536 imgs)     \\
+Epochs              & 338 (converged early)            & 300                         \\
+Batch size          & 64                               & 64                          \\
+Optimizer           & auto (SGD)                       & AdamW                       \\
+Learning rate       & 0.01                             & 0.001                       \\
+Image size          & 640                              & 640                         \\
+Freeze layers       & None                             & Phase-dependent             \\
+Pretrained weights  & COCO (\texttt{yolo26n.pt})       & Stage~1 \texttt{best.pt}    \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\section{The \texttt{optimizer='auto'} Bug}
+\label{app:optimizer_bug}
+
+% TODO: Document the Ultralytics bug encountered during two-stage training (1-2 paragraphs)
+% - When optimizer='auto', Ultralytics internally selects SGD or AdamW
+%   but IGNORES the user-specified lr0 parameter
+% - This caused catastrophic forgetting during Stage 2 fine-tuning:
+%   the model's pre-trained features were destroyed in early epochs
+% - Diagnosis: loss spiked immediately, mAP50 dropped to near-zero
+% - Solution: explicitly set optimizer='AdamW' and lr0=0.001
+% - Lesson: always verify optimizer behavior with Ultralytics framework
+% - Could include a code snippet showing the fix
+
+\section{fsoco-ubm Dataset Creation Pipeline}
+\label{app:ubm_pipeline}
+
+% TODO: Document the complete pipeline for creating the UBM test set
+% - Step 1: Convert .mcap ROS bags to AVI videos using ROS2 tools
+% - Step 2: Extract frames every 60 frames (2 seconds real-world at 60 FPS)
+% - Step 3: Upload to Roboflow workspace (fsae-okyoe/ml4cv_project)
+% - Step 4: Annotate with Roboflow Label Assist (5 cone classes)
+% - Step 5: Export in YOLO format (critical: use matching format for model version)
+% - Important: annotation format must match model (yolov11 vs yolo26 format mismatch bug)
+
+\begin{lstlisting}[style=python, caption={Frame extraction from AVI video.}, label={lst:extraction}]
+# TODO: Paste key extract from extract_frames_from_avi.py
+import cv2
+
+cap = cv2.VideoCapture("media/lidar1.avi")
+frame_count = 0
+saved = 0
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+    if frame_count % 60 == 0:  # every 2 seconds
+        cv2.imwrite(f"ubm_test_set/images/lidar1_{saved:04d}.png", frame)
+        saved += 1
+    frame_count += 1
+cap.release()
+\end{lstlisting}

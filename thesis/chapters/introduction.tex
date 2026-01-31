@@ -1,0 +1,44 @@
+% chapters/introduction.tex
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Context: Formula Student Driverless}
+\label{sec:context}
+
+This report addresses an element of the work undertaken by Unibo Motorsport (UBM) to succeed in the Formula SAE (FSAE) competition. Since 2017, the competition requires cars to autonomously navigate an unknown track delineated by colored traffic cones at maximum speed. To do so, the software and hardware stack must be efficient, reliable, and well integrated. The perception of the colored cones is vital due to the garbage-in, garbage-out moniker: even the best written code cannot produce good results on bad data. Therefore, in this report we  increase successful cone detections by utilizing the newest generation of YOLO models alongside a new dataset. This research is vital, last summer, UBM competed at Formula Student Germany, and this year we will compete again from the 11-16th of August 2026.
+
+\section{Problem Statement}
+\label{sec:problem}
+
+For perception, the software stack relies upon a custom trained YOLO object detector to identify track cones from a stereocamera so that they may be reconstructed with a multi-stage matching algorithm. The baseline model, YOLOv11, has room for improvement. It is trained on base hyperparameters and any tuning or analysis was lost. The \mAPfifty{}=0.666 and while this figure is our quantitative benchmark, qualitative issues registered by the team include exposure sensitivity and false positives.
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.65\textwidth]{false_positive_yolo.png}
+\caption{Example false positive: a person misclassified as a yellow cone by the baseline YOLOv11n detector.}
+\label{fig:false_positive}
+\end{figure}
+The model is constrained by both accuracy and real time speed. The stereocamera operates at 60fps which allows for a maximum control loop time of 16.7 ms. Any time perception takes out of this hard limit, is less time for the decision and control algorithms to operate.
+
+
+\section{Objectives}
+\label{sec:objectives}
+
+The project objectives are:
+\begin{enumerate}
+    \item Reproduce and establish a reproducible baseline
+    \item Evaluate modern YOLO architectures (YOLO12n, YOLO26n)
+    \item Explore two-stage training (pre-training on larger dataset + fine-tuning)
+    \item Assess hyperparameter optimization via Bayesian sweep
+    \item Deploy optimized model on RTX 4060 via TensorRT
+    \item Create real-world validation dataset (fsoco-ubm)
+\end{enumerate}
+
+\section{Contributions}
+\label{sec:contributions}
+
+We systematically evaluated three YOLO architectures on the cone detection task and found that YOLO26n, the most recent and lightweight of the three, achieves the best results. On the FSOCO-12 benchmark it reaches \mAPfifty{}=0.763, a 14.6\% improvement over the model currently running on the car. We also explored a two-stage training strategy, pre-training on a larger 22{,}725 image dataset before fine-tuning on FSOCO-12, which trades a small amount of benchmark precision for better recall and real-world generalization. A Bayesian hyperparameter sweep over 13 parameters showed that the Ultralytics defaults are already near-optimal, providing no measurable gain. To validate our results beyond internet benchmarks, we created fsoco-ubm, a 96-image test set extracted from the car's own camera recordings at the Rioveggio test track. Finally, we deployed the selected model via TensorRT FP16 on the onboard RTX 4060, achieving 2.63~ms inference latency with a 6.3$\times$ margin over the 60~fps real-time requirement.
+
+\section{Report Structure}
+\label{sec:structure}
+
+\Cref{ch:background} covers the relevant background on YOLO architectures, transfer learning, and deployment optimization. \Cref{ch:methods} describes the datasets, training procedures, and deployment pipeline. \Cref{ch:results} presents the benchmark results, per-class analysis, real-world validation, and deployment performance. \Cref{ch:conclusion} summarizes our findings and outlines future work. \Cref{app:technical} documents technical details including the sweep configuration, two-stage hyperparameters, and a bug encountered with the Ultralytics optimizer.
