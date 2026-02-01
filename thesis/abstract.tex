@@ -2,14 +2,6 @@
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
-% TODO: Write 150-250 word abstract covering:
-% - Context: Formula Student Driverless, real-time cone detection
-% - Problem: Baseline YOLO11n performance, lost hyperparameters
-% - Method: Systematic evaluation of YOLO12n and YOLO26n, two-stage training,
-%   hyperparameter sweep, TensorRT deployment
-% - Results: YOLO26n achieves 0.763 mAP50 (+14.6% over UBM production),
-%   2.63 ms inference on RTX 4060
-% - Conclusion: Modern YOLO architectures improve both accuracy and speed
-%   for autonomous racing cone detection
+% Write 150-250 word abstract
 
-Autonomous Formula SAE race cars must detect colored traffic cones in real time to navigate an unknown track. We improve the cone detection pipeline for the Unibo Motorsport race car by evaluating three YOLO architectures---YOLO11n, YOLO12n, and YOLO26n---on the FSOCO-12 benchmark under identical training conditions. YOLO26n achieves \mAPfifty{}=0.763, a 14.6\% improvement over the YOLO11n model previously deployed on the car (0.666), while being smaller and faster. A Bayesian hyperparameter sweep over 13 parameters found no improvement over the Ultralytics defaults, confirming that architecture selection dominates tuning for this task. A two-stage training strategy---pre-training on a larger 22{,}725-image dataset before fine-tuning on FSOCO-12---matched the single-stage benchmark but improved recall by 1.4 percentage points. To validate beyond internet benchmarks, we created fsoco-ubm, a 96-image test set from the car's own stereo camera, which revealed a 22--27\% accuracy drop across all models. The selected model was deployed via TensorRT FP16 on the onboard RTX~4060, achieving 2.63~ms inference, well under the a 16.2ms margin for the 60~fps real-time requirement.
+Autonomous Formula SAE race cars must detect colored traffic cones in real time to navigate an unknown track. We improve the cone detection pipeline for the Unibo Motorsport race car by evaluating three YOLO architectures, YOLO11n, YOLO12n, and YOLO26n, on the FSOCO-12 benchmark under identical training conditions. YOLO26n achieves \mAPfifty{}=0.763, a 14.6\% improvement over the YOLO11n model previously deployed on the car (0.666), while being smaller and faster. A Bayesian hyperparameter sweep over 13 parameters found no improvement over the Ultralytics defaults, confirming that architecture selection dominates tuning for this task. A two-stage training strategy, pre-training on a larger 22{,}725-image dataset before fine-tuning on FSOCO-12, matched the single-stage benchmark but improved recall by 1.4 percentage points. To validate beyond internet benchmarks, we created fsoco-ubm, a 96-image test set from the car's own stereo camera, which revealed a 22--27\% accuracy drop across all models. The selected model was deployed via TensorRT FP16 on the onboard RTX~4060, achieving 2.63~ms inference, well under the a 16.2ms margin for the 60~fps real-time requirement.

@@ -5,77 +5,91 @@
 \section{Hyperparameter Sweep Configuration}
 \label{app:sweep}
 
-% TODO: Include the W&B sweep YAML configuration (1 listing)
-% - 13 hyperparameters: lr0, lrf, momentum, weight_decay, warmup_epochs,
-%   warmup_momentum, box, cls, dfl, hsv_h, hsv_s, hsv_v, mosaic
-% - Bayesian optimization method
-% - Include ranges for each parameter
+\Cref{lst:sweep} shows the full W\&B Bayesian sweep configuration. The 13 tuned parameters span learning rate scheduling, regularization, and data augmentation. Fixed parameters (epochs=100, batch=48, image size=640) were held constant across all runs to isolate the effect of the tuned parameters. Batch size was reduced from 64 to 48 due to a memory leak between consecutive W\&B runs.
 
 \begin{lstlisting}[style=yaml, caption={W\&B Bayesian sweep configuration.}, label={lst:sweep}]
-# TODO: Paste actual sweep YAML from wandb_sweep.yaml
+program: train_sweep.py
 method: bayes
 metric:
   name: metrics/mAP50(B)
   goal: maximize
+early_terminate:
+  type: hyperband
+  min_iter: 30
+  eta: 2
+  s: 3
 parameters:
-  lr0:
-    min: 0.001
-    max: 0.05
-  momentum:
-    min: 0.8
-    max: 0.98
-  # ... (add remaining 11 parameters)
+  lr0:           {distribution: uniform, min: 0.005, max: 0.02}
+  lrf:           {distribution: uniform, min: 0.01,  max: 0.1}
+  warmup_epochs: {values: [1, 3, 5]}
+  hsv_h:         {distribution: uniform, min: 0.0,   max: 0.03}
+  hsv_s:         {distribution: uniform, min: 0.5,   max: 0.9}
+  hsv_v:         {distribution: uniform, min: 0.3,   max: 0.6}
+  mosaic:        {distribution: uniform, min: 0.5,   max: 1.0}
+  close_mosaic:  {values: [0, 5, 10, 15, 20]}
+  mixup:         {distribution: uniform, min: 0.0,   max: 0.3}
+  copy_paste:    {distribution: uniform, min: 0.0,   max: 0.3}
+  weight_decay:  {distribution: uniform, min: 0.0001,max: 0.001}
+  dropout:       {distribution: uniform, min: 0.0,   max: 0.2}
+  degrees:       {distribution: uniform, min: 0.0,   max: 10.0}
+  # Fixed
+  epochs: {value: 100}
+  batch:  {value: 48}
+  imgsz:  {value: 640}
 \end{lstlisting}
 
 \section{Two-Stage Training Hyperparameters}
 \label{app:two_stage_params}
 
-% TODO: Document exact training parameters for both stages
+\Cref{tab:two_stage_config} documents the exact configuration for each training stage. Stage~2 was split into two phases after the initial attempt caused catastrophic forgetting (\cref{app:optimizer_bug}). Phase~2A freezes the backbone and trains only the detection head; Phase~2B unfreezes all layers with an ultra-low learning rate.
 
 \begin{table}[ht]
 \centering
 \caption{Two-stage training configuration.}
 \label{tab:two_stage_config}
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{@{}llll@{}}
 \toprule
-\textbf{Parameter}  & \textbf{Stage 1 (cone-detector)} & \textbf{Stage 2 (FSOCO-12)} \\ \midrule
-Dataset             & cone-detector (22{,}725 imgs)    & FSOCO-12 (5{,}536 imgs)     \\
-Epochs              & 338 (converged early)            & 300                         \\
-Batch size          & 64                               & 64                          \\
-Optimizer           & auto (SGD)                       & AdamW                       \\
-Learning rate       & 0.01                             & 0.001                       \\
-Image size          & 640                              & 640                         \\
-Freeze layers       & None                             & Phase-dependent             \\
-Pretrained weights  & COCO (\texttt{yolo26n.pt})       & Stage~1 \texttt{best.pt}    \\ \bottomrule
+\textbf{Parameter}  & \textbf{Stage 1}          & \textbf{Phase 2A}         & \textbf{Phase 2B}         \\ \midrule
+Dataset             & cone-detector (22{,}725)   & FSOCO-12 (7{,}120)        & FSOCO-12 (7{,}120)        \\
+Epochs              & 338 (early stop)           & 50                        & 250                       \\
+Batch size          & 64                         & 64                        & 64                        \\
+Optimizer           & auto (SGD)                 & AdamW                     & AdamW                     \\
+Learning rate       & 0.01                       & 0.001                     & 0.00005                   \\
+LR final (lrf)      & 0.01                       & 0.0001                    & 0.000005                  \\
+Warmup epochs       & 3                          & 10 (20\%)                 & 50 (20\%)                 \\
+Frozen layers       & None                       & 0--10 (backbone)          & None                      \\
+LR schedule         & Linear                     & Cosine                    & Cosine                    \\
+Pretrained weights  & COCO (\texttt{yolo26n.pt}) & Stage~1 \texttt{best.pt}  & Phase~2A \texttt{best.pt} \\
+Image size          & 640                        & 640                       & 640                       \\ \bottomrule
 \end{tabular}
 \end{table}
 
 \section{The \texttt{optimizer='auto'} Bug}
 \label{app:optimizer_bug}
 
-% TODO: Document the Ultralytics bug encountered during two-stage training (1-2 paragraphs)
-% - When optimizer='auto', Ultralytics internally selects SGD or AdamW
-%   but IGNORES the user-specified lr0 parameter
-% - This caused catastrophic forgetting during Stage 2 fine-tuning:
-%   the model's pre-trained features were destroyed in early epochs
-% - Diagnosis: loss spiked immediately, mAP50 dropped to near-zero
-% - Solution: explicitly set optimizer='AdamW' and lr0=0.001
-% - Lesson: always verify optimizer behavior with Ultralytics framework
-% - Could include a code snippet showing the fix
+Our first attempt at Stage~2 fine-tuning failed immediately. We configured \texttt{lr0=0.001} (10$\times$ lower than training from scratch), but the model's \mAPfifty{} dropped from 0.754 to 0.628 in two epochs---catastrophic forgetting. The training logs revealed the cause:
+
+\begin{lstlisting}[style=python, caption={Ultralytics log output showing the overridden learning rate.}, label={lst:optimizer_bug}]
+optimizer: 'optimizer=auto' found, ignoring 'lr0=0.001'
+           and 'momentum=0.937' and determining best
+           'optimizer', 'lr0' and 'momentum' automatically...
+optimizer: MuSGD(lr=0.01, momentum=0.9) with parameter groups
+\end{lstlisting}
+
+The \texttt{optimizer='auto'} default silently replaced our learning rate with a hardcoded \texttt{lr=0.01}---the same rate used for training from scratch, and 10$\times$ higher than what we specified. The internal heuristic selects SGD with \texttt{lr=0.01} whenever the total iteration count exceeds 10{,}000 (ours was 33{,}375), regardless of user-specified parameters. This behavior is documented in Ultralytics GitHub issues \#17444 and \#9182 but is not prominently noted in the official documentation.
+
+The fix was to explicitly set \texttt{optimizer='AdamW'}, which respects the user-specified \texttt{lr0}. Combined with the two-phase freeze/unfreeze strategy described in \cref{sec:two_stage}, this eliminated the forgetting entirely. The lesson: when fine-tuning with Ultralytics, never rely on \texttt{optimizer='auto'}---always set the optimizer explicitly.
 
 \section{fsoco-ubm Dataset Creation Pipeline}
 \label{app:ubm_pipeline}
 
-% TODO: Document the complete pipeline for creating the UBM test set
-% - Step 1: Convert .mcap ROS bags to AVI videos using ROS2 tools
-% - Step 2: Extract frames every 60 frames (2 seconds real-world at 60 FPS)
-% - Step 3: Upload to Roboflow workspace (fsae-okyoe/ml4cv_project)
-% - Step 4: Annotate with Roboflow Label Assist (5 cone classes)
-% - Step 5: Export in YOLO format (critical: use matching format for model version)
-% - Important: annotation format must match model (yolo11 vs yolo26 format mismatch bug)
+The fsoco-ubm test set was created in five steps from raw ROS bag recordings captured on November 20, 2025 at the Rioveggio test track.
 
-\begin{lstlisting}[style=python, caption={Frame extraction from AVI video.}, label={lst:extraction}]
-# TODO: Paste key extract from extract_frames_from_avi.py
+\textbf{Step 1: Video extraction.} The \texttt{.mcap} ROS bag files were converted to AVI videos using ROS2 tooling on the ASU. The two resulting files (LidarTest1 and LidarTest2) contain stereo-stitched frames at 2560$\times$720 resolution. Although exported at 60~FPS, the original recording was 30~FPS, so consecutive frames are duplicated.
+
+\textbf{Step 2: Frame sampling.} We extracted one frame every 60 frames (2 seconds of real-world time) to avoid near-duplicate images while preserving temporal diversity. Each stereo frame was split into left and right images of 1280$\times$720. This yielded 46 stereo pairs (92 images) from the two videos, as shown in \cref{lst:extraction}.
+
+\begin{lstlisting}[style=python, caption={Frame extraction and stereo splitting.}, label={lst:extraction}]
 import cv2
 
 cap = cv2.VideoCapture("media/lidar1.avi")
@@ -86,8 +100,19 @@ while cap.isOpened():
     if not ret:
         break
     if frame_count % 60 == 0:  # every 2 seconds
-        cv2.imwrite(f"ubm_test_set/images/lidar1_{saved:04d}.png", frame)
+        h, w = frame.shape[:2]
+        mid = w // 2
+        left  = frame[:, :mid]
+        right = frame[:, mid:]
+        cv2.imwrite(f"images/lidar1_left_{saved:04d}.jpg", left)
+        cv2.imwrite(f"images/lidar1_right_{saved:04d}.jpg", right)
         saved += 1
     frame_count += 1
 cap.release()
 \end{lstlisting}
+
+\textbf{Step 3: Upload and annotation.} The 96 images were uploaded to Roboflow and annotated using Label Assist (automated pre-labeling) followed by manual review for the five cone classes. Annotation took approximately 8 hours.
+
+\textbf{Step 4: Export.} The annotated dataset was exported from Roboflow in YOLO format for evaluation.
+
+\textbf{Step 5: Format mismatch bug.} We initially exported the dataset in \texttt{yolo26} format, which uses a different annotation structure than the \texttt{yolov11} format our models were trained on. YOLO26 places normalized \texttt{xywh} coordinates in a different column order, causing the evaluation script to silently misparse bounding boxes. All initial fsoco-ubm results were invalid---models appeared to perform far worse than they actually did. The fix was re-exporting in \texttt{yolov11} format to match the training data. This failure mode produces no error message; the only symptom is anomalously low metrics. When evaluating a model on a new dataset, always verify that the annotation format matches the format used during training.

@@ -286,7 +286,9 @@ model = YOLO('runs/two-stage-yolo26/stage2a_head_only_50ep/weights/best.pt')  # 
 | 2026-01-27 | 6 hrs | Created in-house UBM test dataset (fsoco-ubm): annotated 96 images in Roboflow with Label Assist, exported dataset. YOLO26n Stage 1 training ran all day (interrupted at epoch 338/400 but converged). Launched Stage 2 fine-tuning (failed due to optimizer='auto' ignoring lr0, causing catastrophic forgetting). Researched fine-tuning best practices, debugged optimizer issue, redesigned Stage 2 as two-phase fine-tuning with AdamW. |
 | 2026-01-28 | 4 hrs | Completed YOLO26n two-stage training (Stage 2B: 250 epochs). Evaluated two-stage on FSOCO-12 test (0.7612 mAP50, -0.2% vs single-stage). Ran fsoco-ubm evaluation on all 6 models. Bug found: annotation format mismatch (yolo26 vs yolo11) invalidated all initial fsoco-ubm results. Fixed download_fsoco_ubm.py and re-evaluated. Corrected results: YOLO26n two-stage wins (0.5652 mAP50), YOLO11n shows best generalization (-21.5% drop). Updated docs/RESULTS_SUMMARY.md with complete deployment roadmap. Located confidence threshold in ROS node (line 79, change 0.5 to 0.20). Created comprehensive docs/DATASETS.md. Final decision: Deploy YOLO26n (two-stage) with conf=0.20. |
 | 2026-01-29 | 5 hrs | Updated model from YOLO11 to YOLO26n with testing and documentation throughout. Created benchmark summary tables (docs/table.md) for academic and team audiences. Opened PR #30 on ubm-yolo-detector. Next: 2026-02-05 workshop session -- compile on ASU and run full stack for in-situ testing. |
-| 2026-01-30 | 1.5 hrs | Wrote introduction.tex of report. |
+| 2026-01-31 | 1.5 hrs | Wrote introduction.tex of report. |
+| 2026-01-30 | 4 hrs | Wrote report. |
+| 2026-01-30 | 4 hrs | Edited report and wrote README.md. |
 
 ---
 

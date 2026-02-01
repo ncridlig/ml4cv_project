@@ -37,6 +37,6 @@
 \contentsline {section}{\numberline {5.4}Future Work}{21}{section.5.4}%
 \contentsline {chapter}{\numberline {A}Technical Details}{23}{appendix.A}%
 \contentsline {section}{\numberline {A.1}Hyperparameter Sweep Configuration}{23}{section.A.1}%
-\contentsline {section}{\numberline {A.2}Two-Stage Training Hyperparameters}{23}{section.A.2}%
-\contentsline {section}{\numberline {A.3}The \texttt {optimizer='auto'} Bug}{23}{section.A.3}%
-\contentsline {section}{\numberline {A.4}fsoco-ubm Dataset Creation Pipeline}{23}{section.A.4}%
+\contentsline {section}{\numberline {A.2}Two-Stage Training Hyperparameters}{24}{section.A.2}%
+\contentsline {section}{\numberline {A.3}The \texttt {optimizer='auto'} Bug}{24}{section.A.3}%
+\contentsline {section}{\numberline {A.4}fsoco-ubm Dataset Creation Pipeline}{25}{section.A.4}%
