@@ -1,16 +1,15 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Hardware used for training and deployment.}}{11}{table.caption.6}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Datasets used in this project.}}{12}{table.caption.7}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Hyperparameter sweep summary (W\&B Bayesian optimization).}}{14}{table.caption.9}%
-\contentsline {table}{\numberline {3.4}{\ignorespaces Architecture specifications for the three evaluated models.}}{14}{table.caption.10}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Hardware used for training and deployment.}}{12}{table.caption.8}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Datasets used in this project.}}{12}{table.caption.9}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Hyperparameter sweep summary (W\&B Bayesian optimization).}}{14}{table.caption.11}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Architecture specifications for the three evaluated models.}}{15}{table.caption.12}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Overall performance on the FSOCO-12 test set (689 images, 12{,}054 instances).}}{17}{table.caption.12}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Per-class performance of YOLO26n (single-stage) on FSOCO-12 test set.}}{18}{table.caption.13}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Two-stage vs.\ single-stage YOLO26n training comparison.}}{18}{table.caption.14}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces Real-world performance on fsoco-ubm test set (96 images, 1{,}426 instances).}}{19}{table.caption.15}%
-\contentsline {table}{\numberline {4.5}{\ignorespaces Inference latency breakdown on RTX 4060 (TensorRT FP16).}}{19}{table.caption.16}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Overall performance on the FSOCO-12 test set (689 images, 12{,}054 instances).}}{17}{table.caption.14}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Per-class performance of YOLO26n (single-stage) on FSOCO-12 test set.}}{18}{table.caption.16}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Two-stage vs.\ single-stage YOLO26n training comparison.}}{19}{table.caption.17}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Real-world performance on fsoco-ubm test set (96 images, 1{,}426 instances).}}{19}{table.caption.18}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {A.1}{\ignorespaces Two-stage training configuration.}}{24}{table.caption.17}%
+\contentsline {table}{\numberline {A.1}{\ignorespaces Two-stage training configuration.}}{24}{table.caption.19}%

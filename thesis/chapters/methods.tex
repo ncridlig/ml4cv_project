@@ -6,7 +6,14 @@
 \label{sec:setup}
 
 % Describe hardware and software setup
-We used a M1 MacBook Air for code development and an Ubuntu workstation with an RTX 4080 Super for training. The existing inference pipeline (\texttt{ubm-yolo-detector}) enforced the use of Ultralytics models, which we kept to slot the new model into the existing modular framework. Weights and Biases \citep{wandb} provided experiment tracking. The Autonomous System Unit (ASU) on the race car is a water-cooled desktop running ROS2 \citep{fusa2025}; for our purposes we care only about its GPU, an RTX 4060.
+All training scripts, configurations, and evaluation code are publicly available \citep{cridlig2026code}. We used a M1 MacBook Air for code development and an Ubuntu workstation with an RTX 4080 Super for training. The existing inference pipeline (\texttt{ubm-yolo-detector}) enforced the use of Ultralytics models, which we kept to slot the new model into the existing modular framework. Weights and Biases \citep{wandb} provided experiment tracking. The Autonomous System Unit (ASU) on the race car is a water-cooled desktop running ROS2 \citep{fusa2025}; for our purposes we care only about its GPU, an RTX 4060.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.75\textwidth]{ASU.png}
+\caption{The Autonomous System Unit (white box) benchmarking YOLO models.}
+\label{fig:asu}
+\end{figure}
 
 \begin{table}[ht]
 \centering
@@ -17,7 +24,7 @@ We used a M1 MacBook Air for code development and an Ubuntu workstation with an 
 \textbf{Machine}    & \textbf{Purpose}          & \textbf{GPU}              & \textbf{OS}    \\ \midrule
 M1 MacBook          & Code development          & CPU only                  & macOS          \\
 Ubuntu Workstation   & Training \& testing       & RTX 4080 Super (CUDA)     & Ubuntu         \\
-ASU (Race Car)       & Deployment                & RTX 4060                  & Ubuntu (ROS2)  \\ \bottomrule
+ASU (Race Car)       & Deployment                & RTX 4060 (CUDA)           & Ubuntu (ROS2)  \\ \bottomrule
 \end{tabular}
 \end{table}
 
@@ -25,7 +32,7 @@ ASU (Race Car)       & Deployment                & RTX 4060                  & U
 \label{sec:datasets}
 
 % Describe each dataset and its role
-We used three datasets, summarized in \cref{tab:datasets}. FSOCO-12 \citep{fsoco12} is the primary training and benchmarking dataset. The cone-detector dataset \citep{cone_detector} is a larger collection used exclusively for pre-training in the two-stage strategy. Finally, fsoco-ubm is a small test set we created from the car's own camera to validate whether benchmark results translate to the real world.
+We used three datasets, summarized in \cref{tab:datasets}.
 
 \begin{table}[ht]
 \centering
@@ -73,17 +80,17 @@ The dataset contains 1{,}426 cone instances across the five classes, dominated b
 \label{sec:baseline}
 
 % Describe baseline training
-Our first step was to reproduce the baseline from Fusa's thesis \citep{fusa2025}, which reports \mAPfifty{}=0.824 for YOLOv11n on FSOCO. We trained YOLOv11n for 300 epochs on FSOCO-12 using Ultralytics default hyperparameters (AdamW optimizer, lr0=0.01, batch 64, 640$\times$640 input, default augmentation with mosaic=1.0, mixup=0.0). The model converged around epoch 200 and plateaued at \mAPfifty{}=0.714 on the validation set, 13.4\% below the thesis claim.
+Our first step was to reproduce the baseline from Fusa's thesis \citep{fusa2025}, which reports \mAPfifty{}=0.824 for YOLO11n on FSOCO. We trained YOLO11n for 300 epochs on FSOCO-12 using Ultralytics default hyperparameters (AdamW optimizer, lr0=0.01, batch 64, 640$\times$640 input, default augmentation with mosaic=1.0, mixup=0.0). The model converged around epoch 200 and plateaued at \mAPfifty{}=0.714 on the validation set, 13.4\% below the thesis claim.
 
-We contacted the thesis author, who confirmed that the reported results were produced by other team members (Gabriele and Patta) using an unknown ``particular dataset'' and training configuration that was subsequently lost. The production model currently deployed on the car, which we evaluated independently on the FSOCO-12 test set, achieves only \mAPfifty{}=0.666. Our baseline therefore already exceeds the production model by 6.2\%, and we adopt \mAPfifty{}=0.707 (test set) as the reproducible reference point for all subsequent experiments.
+We contacted the thesis author, who confirmed that the reported results were produced by other team members (Gabriele and Patta) using an unknown ``particular dataset'' and training configuration that was subsequently lost. We then evaluated the production weights currently deployed on the car---a separate YOLO11n checkpoint trained with that lost configuration---on the FSOCO-12 test set: it achieves only \mAPfifty{}=0.666. Our retrained model scores \mAPfifty{}=0.707 on the same test set, already 6.2\% above production, and we adopt this as the reproducible baseline for all subsequent experiments.
 
 \section{Hyperparameter Sweep}
 \label{sec:sweep}
 
 % Describe W\&B Bayesian sweep
-To determine whether the baseline could be improved through hyperparameter tuning, we ran a Bayesian optimization sweep using Weights \& Biases \citep{wandb, bayesian_optimization}. The sweep explored 13 hyperparameters: learning rate (lr0, lrf), momentum, weight decay, warmup epochs, close mosaic epoch, dropout, and six augmentation parameters (hsv\_h, hsv\_s, hsv\_v, mosaic, mixup, copy\_paste). Each run trained for 100 epochs on FSOCO-12 with YOLOv11n.
+To determine whether the baseline could be improved through hyperparameter tuning, we ran a Bayesian optimization sweep using Weights \& Biases \citep{wandb, bayesian_optimization}. The sweep explored 13 hyperparameters: learning rate (lr0, lrf), momentum, weight decay, warmup epochs, close mosaic epoch, dropout, and six augmentation parameters (hsv\_h, hsv\_s, hsv\_v, mosaic, mixup, copy\_paste). Each run trained for 100 epochs on FSOCO-12 with YOLO11n.
 
-Of 21 planned runs, 10 completed successfully and 11 crashed. The crashes were strongly correlated with aggressive augmentation: crashed runs had 4$\times$ higher mixup (0.197 vs 0.049) and nearly 2$\times$ higher dropout (0.156 vs 0.081) on average. High mixup creates heavily blended training images that, combined with high dropout, introduce too much regularization for the model to converge. Among the 10 completed runs, the best achieved \mAPfifty{}=0.709, 0.7\% \emph{worse} than our baseline (\cref{tab:sweep}). The mean was 0.703 with a standard deviation of 0.019, confirming that YOLOv11n on FSOCO-12 is insensitive to these hyperparameters. We stopped the sweep and pivoted to architecture changes.
+Of 21 planned runs, 10 completed successfully and 11 crashed. The crashes were strongly correlated with aggressive augmentation: crashed runs had 4$\times$ higher mixup (0.197 vs 0.049) and nearly 2$\times$ higher dropout (0.156 vs 0.081) on average. High mixup creates heavily blended training images that, combined with high dropout, introduce too much regularization for the model to converge. Among the 10 completed runs, the best achieved \mAPfifty{}=0.709, 0.7\% \emph{worse} than our baseline (\cref{tab:sweep}). The mean was 0.703 with a standard deviation of 0.019, confirming that YOLO11n on FSOCO-12 is insensitive to these hyperparameters. We stopped the sweep and pivoted to architecture changes.
 
 \begin{table}[ht]
 \centering
@@ -104,7 +111,7 @@ Standard deviation           & 0.019            \\ \bottomrule
 \label{sec:architecture}
 
 % Describe architecture comparison methodology
-Since hyperparameter tuning proved ineffective, we evaluated whether newer architectures could break through the YOLOv11n performance ceiling. We trained YOLO12n \citep{yolo12} and YOLO26n \citep{yolo26} under identical conditions: FSOCO-12 dataset, 300 epochs, batch 64, Ultralytics default hyperparameters. All three models are nano variants with comparable parameter counts (2.51--2.59M) and GFLOPs (5.8--6.4), as shown in \cref{tab:architectures}, making the comparison fair with respect to model capacity. YOLO12n finished at \mAPfifty{}=0.708 on the test set, a marginal gain over YOLOv11n (0.707). YOLO26n reached \mAPfifty{}=0.763, a substantial 7.9\% improvement over our baseline and 14.6\% over the UBM production model. Every class improved, with the largest absolute gains on unknown cones (+23.4\%) and orange cones (+6.8\%). 
+Since hyperparameter tuning proved ineffective, we evaluated whether newer architectures could break through the YOLO11n performance ceiling. We trained YOLO12n \citep{yolo12} and YOLO26n \citep{yolo26} under identical conditions: FSOCO-12 dataset, 300 epochs, batch 64, Ultralytics default hyperparameters. All three models are nano variants with comparable parameter counts (2.51--2.59M) and GFLOPs (5.8--6.4), as shown in \cref{tab:architectures}, making the comparison fair with respect to model capacity. YOLO12n finished at \mAPfifty{}=0.708 on the test set, a marginal gain over YOLO11n (0.707). YOLO26n reached \mAPfifty{}=0.763, a substantial 7.9\% improvement over our baseline and 14.6\% over the UBM production model. Every class improved, with the largest absolute gains on unknown cones (+23.4\%) and orange cones (+6.8\%). 
 \begin{table}[ht]
 \centering
 \caption{Architecture specifications for the three evaluated models.}
@@ -112,7 +119,7 @@ Since hyperparameter tuning proved ineffective, we evaluated whether newer archi
 \begin{tabular}{@{}lS[table-format=1.2]S[table-format=1.1]l@{}}
 \toprule
 \textbf{Model}  & {\textbf{Params (M)}} & {\textbf{GFLOPs}} & \textbf{Year} \\ \midrule
-YOLOv11n        & 2.59                  & 6.4               & 2024          \\
+YOLO11n        & 2.59                  & 6.4               & 2024          \\
 YOLO12n         & 2.56                  & 6.3               & 2025          \\
 YOLO26n         & 2.51                  & 5.8               & 2025          \\ \bottomrule
 \end{tabular}

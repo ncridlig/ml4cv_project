@@ -5,67 +5,44 @@
 \section{Summary of Contributions}
 \label{sec:summary}
 
-% TODO: Summarize key results (2-3 paragraphs)
-% - Systematic evaluation of three YOLO architectures for cone detection
-% - YOLO26n achieves 0.763 mAP50 on FSOCO-12 (+14.6% over UBM production)
-% - Two-stage training matches single-stage mAP50 but improves recall (+1.4pp)
-%   and real-world precision (+3.4pp)
-% - Deployment on RTX 4060: 2.63 ms inference (2.58x faster than baseline)
-% - Created fsoco-ubm real-world test set (96 images from car camera)
-% - Hyperparameter sweep confirmed Ultralytics defaults are near-optimal
+% Summarize key results
 
-Of the three architectures evaluated, YOLO26n achieved the best results: \mAPfifty{}=0.763 on FSOCO-12 (+14.6\% over the previous production model) and 2.63~ms inference on the onboard RTX~4060, leaving a 6.3$\times$ margin for 60~fps operation. A two-stage training variant traded marginal benchmark precision for better recall and real-world generalization. Hyperparameter tuning proved ineffective. Our real-world test set, fsoco-ubm, revealed a 22--27\% accuracy drop from the internet benchmark across all models---a gap that would have gone unnoticed without car-specific validation data.
+Of the three architectures evaluated, YOLO26n achieved the best results: \mAPfifty{}=0.763 on FSOCO-12 (+14.6\% over the previous production model) and 2.63~ms inference on the onboard RTX~4060, leaving a 6.3$\times$ margin for 60~fps operation. A two-stage training variant traded marginal benchmark precision for better recall and real-world generalization. Hyperparameter tuning proved ineffective. Our real-world test set, fsoco-ubm, revealed a 22--27\% accuracy drop from the internet benchmark across all models. This gap would have gone unnoticed without car-specific validation data.
 
 \section{Lessons Learned}
 \label{sec:lessons}
 
-% TODO: Practical insights (1-2 paragraphs, bullet list)
-% - Architecture matters more than hyperparameter tuning for this task
-% - Two-stage training is viable but benefits are marginal on this data scale
-% - Real-world performance drops 22-32% from benchmark — always validate on real data
-% - Ultralytics optimizer='auto' silently overrides lr0 — document pitfalls
-% - TensorRT FP16 is sufficient; INT8 unnecessary given 6.3x margin
+% Practical insights
 
 Contributing to the existing codebase was straightforward thanks to the modular software architecture established by \citet{fusa2025}: detection, stereo matching, and triangulation are separate stages, so swapping the YOLO model required only replacing the TensorRT engine and updating the confidence threshold. This report also fills a documentation gap: the previous training configuration was lost when team members graduated, so we have documented every run, dataset version, and export step for reproducibility. The key technical lessons are:
 
 \begin{itemize}
-    \item \textbf{Architecture selection matters more than hyperparameter tuning.} The sweep explored 13 parameters across 21 runs and found no improvement over defaults, while upgrading from YOLOv11n to YOLO26n gained 7.9\% \mAPfifty{}.
+    \item \textbf{Architecture selection matters more than hyperparameter tuning.} The sweep explored 13 parameters across 21 runs and found no improvement over defaults, while upgrading from YOLO11n to YOLO26n gained 7.9\% \mAPfifty{}.
     \item \textbf{Always validate on real data.} FSOCO-12 performance does not reliably predict deployment performance: all models lost 22--27\% on our car's camera data. Without fsoco-ubm, we would have overestimated the deployed model's accuracy.
-    \item \textbf{Two-stage training provides marginal gains at this data scale.} Pre-training on 3$\times$ more data improved recall and real-world precision, but the benchmark \mAPfifty{} remained within 0.2\% of single-stage for 4$\times$ the compute.
+    \item \textbf{Two-stage training provides marginal gains at this data scale.} Pre-training on 3$\times$ more data improved recall and real-world precision, but the benchmark \mAPfifty{} remained within 0.2\% of single-stage for 4$\times$ the compute, suggesting that either the nano capacity has been saturated or the two dataset distributions overlap too much for pre-training to add value.
     \item \textbf{Verify framework internals.} The Ultralytics \texttt{optimizer='auto'} setting silently overwrites user-specified learning rates, which caused catastrophic forgetting during fine-tuning and cost a full day of debugging (\cref{app:optimizer_bug}).
 \end{itemize}
 
 \section{Limitations}
 \label{sec:limitations}
 
-% TODO: Discuss limitations (1 paragraph)
-% - fsoco-ubm test set small (96 images, single track, single day)
-% - Could not reproduce thesis mAP50 = 0.824 claim
-% - Unknown Cone class remains challenging (mAP50 = 0.364)
-% - No ablation study on individual augmentation parameters
-% - Only nano variants tested (no small/medium/large comparison)
+% Discuss limitations
 
-Several limitations should be noted. We could not reproduce the \mAPfifty{}=0.824 reported in \citet{fusa2025}: the training configuration and dataset version used to produce that figure were lost, and the best we achieved with YOLOv11n on FSOCO-12 under default hyperparameters was 0.707, which we adopted as our reproducible baseline. The fsoco-ubm test set is small (96 images) and captures a single track on a single day, so it does not cover the full range of conditions the car will face at competition---different track layouts, rain, and dusk lighting are absent. The unknown cone class remains poorly detected (\mAPfifty{}=0.364), a dataset-level problem rooted in annotator ambiguity. We only evaluated nano-sized models ($\sim$2.5M parameters); larger variants may improve accuracy within the available latency budget. Finally, we did not ablate individual augmentation parameters.
+Several limitations should be noted. We could not reproduce the \mAPfifty{}=0.824 reported in \citet{fusa2025}: the training configuration and dataset version used to produce that figure were lost, and the best we achieved with YOLO11n on FSOCO-12 under default hyperparameters was 0.707, which we adopted as our reproducible baseline. The fsoco-ubm test set is small (96 images) and captures a single track on a single day, so it does not cover the full range of conditions the car will face at competition---different track layouts, rain, and dusk lighting are absent. The unknown cone class remains poorly detected (\mAPfifty{}=0.364), a dataset-level problem rooted in annotator ambiguity. We only evaluated nano-sized models ($\sim$2.5M parameters); larger variants may improve accuracy within the available latency budget. Finally, we did not ablate individual augmentation parameters.
 
 \section{Future Work}
 \label{sec:future}
 
-% TODO: Propose extensions (bullet list)
-% - Expand fsoco-ubm with more tracks, weather conditions, lighting
-% - Test YOLO26s/m for potential accuracy gains (if latency budget allows)
-% - Targeted augmentation for Unknown Cone class
-% - Auto-exposure compensation in preprocessing pipeline
-% - End-to-end ROS2 integration testing with full autonomous stack
-% - Cross-camera validation (different stereo cameras)
+% Propose extensions
 
 We recommend the following directions for continued development:
 
 \begin{itemize}
-    \item \textbf{Evaluate larger YOLO26 variants.} The 6.3$\times$ latency margin leaves room for the small or medium variants, which may improve detection of distant and ambiguous cones. Even a model 3$\times$ slower would remain real-time.
-    \item \textbf{Expand fsoco-ubm.} Add images from different tracks, weather conditions, and times of day. The current 96 images from a single session are a starting point, not a representative benchmark.
-    \item \textbf{Target the unknown cone class.} Data augmentation strategies such as color jittering and occlusion simulation may help the model learn to flag uncertain detections. Alternatively, merging unknown cones into the nearest color class during training could improve overall recall at the cost of classification granularity.
+    \item \textbf{Evaluate larger YOLO26 variants.} The 6.3$\times$ latency margin leaves room for YOLO26s, which may improve detection of distant and ambiguous cones.
+    \item \textbf{Expand fsoco-ubm.} Add images from different tracks, weather conditions, and times of day. The current 96 images from a single session are a starting point, not a representative benchmark. With 1{,}000+ annotated images, fsoco-ubm could also serve as a fine-tuning set, closing the benchmark-to-deployment gap directly rather than just measuring it.
+    \item \textbf{Target the unknown cone class.} Data augmentation strategies such as color jittering and occlusion simulation may help the model learn to flag uncertain detections. Alternatively, merging unknown cones into the nearest color class and combining the two orange cone classes during training could improve overall recall at the cost of classification granularity.
     \item \textbf{Auto-exposure compensation.} The ZED~2i camera's auto-exposure underexposes cones when the sky dominates the frame. A preprocessing step that adjusts exposure based on the lower half of the image could reduce this failure mode.
-    \item \textbf{End-to-end integration testing.} We validated detection accuracy and inference speed independently but did not test the full autonomous stack (detection $\to$ matching $\to$ triangulation $\to$ SLAM $\to$ planning $\to$ control) with the new model under race conditions.
+    \item \textbf{End-to-end integration testing.} We validated detection accuracy and inference speed independently but did not test the full autonomous stack (detection $\to$ matching $\to$ triangulation $\to$ SLAM $\to$ planning $\to$ control) with the new model under race conditions. The racecar will be tested in March 2026.
 \end{itemize}
 
-UBM will compete at Formula Student Germany from 11--16 August 2026. The goal is to complete all four dynamic events---Trackdrive, Autocross, Skid Pad, and Acceleration---for the first time; last year a broken axle ended the campaign before we could attempt all of them. The priority is reliability over outright speed: finishing every event and collecting data is more valuable than optimizing for a single fast lap, because the data enables iteration. The improvements in this report contribute to that goal by providing a more accurate and faster perception pipeline, but the real test will come at competition.
+UBM will compete at Formula Student Germany from 11--16 August 2026. The goal is to complete all four dynamic events (Trackdrive, Autocross, Skid Pad, and Acceleration) for the first time; last year a broken axle ended the campaign before we could attempt any of them. The priority is reliability over outright speed: finishing every event and collecting data is more valuable than optimizing for a fast lap, because the data enables iteration for the 2027 competition. The improvements in this report contribute to that goal by providing a more accurate and faster perception pipeline, but the full stack test will come later.

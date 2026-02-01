@@ -1,23 +1,25 @@
-\begin{thebibliography}{23}
+\begin{thebibliography}{24}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem[Bochkovskiy et~al.(2020)Bochkovskiy, Wang, and
-  Liao]{mosaic_augmentation}
+\bibitem[Bochkovskiy et~al.(2020)Bochkovskiy, Wang, and Liao]{mosaic_augmentation}
 Alexey Bochkovskiy, Chien-Yao Wang, and Hong-Yuan~Mark Liao.
 \newblock {YOLOv4}: Optimal speed and accuracy of object detection.
 \newblock \emph{arXiv preprint arXiv:2004.10934}, 2020.
 
-\bibitem[Everingham et~al.(2010)Everingham, Van~Gool, Williams, Winn, and
-  Zisserman]{map_metric}
-Mark Everingham, Luc Van~Gool, Christopher K.~I. Williams, John Winn, and
-  Andrew Zisserman.
+\bibitem[Cridlig(2026)]{cridlig2026code}
+Nicolas Cridlig.
+\newblock Code and training scripts for cone detection improvement, 2026.
+\newblock URL \url{https://github.com/ncridlig/ml4cv_project}.
+\newblock Accessed February 2026.
+
+\bibitem[Everingham et~al.(2010)Everingham, Van~Gool, Williams, Winn, and Zisserman]{map_metric}
+Mark Everingham, Luc Van~Gool, Christopher K.~I. Williams, John Winn, and Andrew Zisserman.
 \newblock The {PASCAL} visual object classes ({VOC}) challenge.
-\newblock \emph{International Journal of Computer Vision}, 88\penalty0
-  (2):\penalty0 303--338, 2010.
+\newblock \emph{International Journal of Computer Vision}, 88\penalty0 (2):\penalty0 303--338, 2010.
 \newblock \doi{10.1007/s11263-009-0275-4}.
 
 \bibitem[{FMDV}(2024)]{fsoco12}
@@ -35,15 +37,13 @@ Mark Everingham, Luc Van~Gool, Christopher K.~I. Williams, John Winn, and
 \bibitem[French(1999)]{catastrophic_forgetting}
 Robert~M. French.
 \newblock Catastrophic forgetting in connectionist networks.
-\newblock \emph{Trends in Cognitive Sciences}, 3\penalty0 (4):\penalty0
-  128--135, 1999.
+\newblock \emph{Trends in Cognitive Sciences}, 3\penalty0 (4):\penalty0 128--135, 1999.
 \newblock \doi{10.1016/S1364-6613(99)01294-2}.
 
 \bibitem[{FSB Driverless}(2024)]{cone_detector}
 {FSB Driverless}.
 \newblock Cone detector dataset (version 1), 2024.
-\newblock URL
-  \url{https://universe.roboflow.com/fsbdriverless/cone-detector-zruok/dataset/1}.
+\newblock URL \url{https://universe.roboflow.com/fsbdriverless/cone-detector-zruok/dataset/1}.
 \newblock 22{,}725 images. Roboflow Universe. Accessed January 2026.
 
 \bibitem[{FSOCO Contributors}(2020)]{fsoco}
@@ -54,8 +54,7 @@ Robert~M. French.
 
 \bibitem[Fusa(2025)]{fusa2025}
 Edoardo Fusa.
-\newblock Pushing cars' limits: Exploring autonomous technologies in the
-  formula {SAE} driverless competition.
+\newblock Pushing cars' limits: Exploring autonomous technologies in the formula {SAE} driverless competition.
 \newblock Master's thesis, University of Bologna, 2025.
 \newblock Stereocamera pipeline for autonomous racing.
 
@@ -65,18 +64,15 @@ Glenn Jocher, Ayush Chaurasia, and Jing Qiu.
 \newblock URL \url{https://github.com/ultralytics/ultralytics}.
 \newblock Accessed January 2026.
 
-\bibitem[Lin et~al.(2014)Lin, Maire, Belongie, Hays, Perona, Ramanan,
-  Doll{\'a}r, and Zitnick]{coco}
-Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva
-  Ramanan, Piotr Doll{\'a}r, and C.~Lawrence Zitnick.
+\bibitem[Lin et~al.(2014)Lin, Maire, Belongie, Hays, Perona, Ramanan, Doll{\'a}r, and Zitnick]{coco}
+Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, Piotr Doll{\'a}r, and C.~Lawrence Zitnick.
 \newblock {Microsoft COCO}: Common objects in context.
 \newblock \emph{arXiv preprint arXiv:1405.0312}, 2014.
 
 \bibitem[Loshchilov and Hutter(2019)]{adamw}
 Ilya Loshchilov and Frank Hutter.
 \newblock Decoupled weight decay regularization.
-\newblock In \emph{International Conference on Learning Representations
-  (ICLR)}, 2019.
+\newblock In \emph{International Conference on Learning Representations (ICLR)}, 2019.
 
 \bibitem[{NVIDIA Corporation}(2024)]{tensorrt}
 {NVIDIA Corporation}.
@@ -90,12 +86,10 @@ Ilya Loshchilov and Frank Hutter.
 \newblock URL \url{https://onnx.ai/}.
 \newblock Accessed January 2026.
 
-\bibitem[Redmon et~al.(2016)Redmon, Divvala, Girshick, and
-  Farhadi]{redmon2016yolo}
+\bibitem[Redmon et~al.(2016)Redmon, Divvala, Girshick, and Farhadi]{redmon2016yolo}
 Joseph Redmon, Santosh Divvala, Ross Girshick, and Ali Farhadi.
 \newblock You only look once: Unified, real-time object detection.
-\newblock In \emph{Proceedings of the IEEE Conference on Computer Vision and
-  Pattern Recognition (CVPR)}, pages 779--788, 2016.
+\newblock In \emph{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 779--788, 2016.
 
 \bibitem[{Roboflow, Inc.}(2024)]{roboflow}
 {Roboflow, Inc.}
@@ -106,15 +100,13 @@ Joseph Redmon, Santosh Divvala, Ross Girshick, and Ali Farhadi.
 \bibitem[{SAE International}(2025)]{fsae_rules}
 {SAE International}.
 \newblock {FSAE} driverless supplement v11, 2025.
-\newblock URL
-  \url{https://www.fsaeonline.com/CompResources/2025/8f030a58-d9e4-49b8-bc83-6ca16c7ce715/FSAE-Driverless-Supplement-V11.pdf}.
+\newblock URL \url{https://www.fsaeonline.com/CompResources/2025/8f030a58-d9e4-49b8-bc83-6ca16c7ce715/FSAE-Driverless-Supplement-V11.pdf}.
 \newblock Section: Dynamic Event Markings.
 
 \bibitem[Snoek et~al.(2012)Snoek, Larochelle, and Adams]{bayesian_optimization}
 Jasper Snoek, Hugo Larochelle, and Ryan~P. Adams.
 \newblock Practical {Bayesian} optimization of machine learning algorithms.
-\newblock In \emph{Advances in Neural Information Processing Systems
-  (NeurIPS)}, volume~25, 2012.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, volume~25, 2012.
 
 \bibitem[{Stereolabs}(2021)]{zed2i}
 {Stereolabs}.
@@ -127,7 +119,7 @@ Yunjie Tian, Qiang Ye, and David Doermann.
 \newblock {YOLO12}: Attention-centric real-time object detectors.
 \newblock \emph{arXiv preprint arXiv:2502.12524}, 2025.
 
-\bibitem[{Ultralytics}(2024)]{yolov11}
+\bibitem[{Ultralytics}(2024)]{yolo11}
 {Ultralytics}.
 \newblock {YOLO11}: Real-time object detection, 2024.
 \newblock URL \url{https://docs.ultralytics.com/models/yolo11/}.

@@ -14,9 +14,9 @@
 \@writefile{toc}{\contentsline {section}{\numberline {1.2}Problem Statement}{6}{section.1.2}\protected@file@percent }
 \newlabel{sec:problem}{{1.2}{6}{Problem Statement}{section.1.2}{}}
 \newlabel{sec:problem@cref}{{[section][2][1]1.2}{[1][6][]6}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1.1}{\ignorespaces Example false positive: a person misclassified as a yellow cone by the baseline YOLOv11n detector.}}{7}{figure.caption.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1.1}{\ignorespaces Example false positive: a person misclassified as a yellow cone by the baseline YOLO11n detector.}}{7}{figure.caption.5}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fig:false_positive}{{1.1}{7}{Example false positive: a person misclassified as a yellow cone by the baseline YOLOv11n detector}{figure.caption.5}{}}
+\newlabel{fig:false_positive}{{1.1}{7}{Example false positive: a person misclassified as a yellow cone by the baseline YOLO11n detector}{figure.caption.5}{}}
 \newlabel{fig:false_positive@cref}{{[figure][1][1]1.1}{[1][6][]7}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {1.3}Objectives}{7}{section.1.3}\protected@file@percent }
 \newlabel{sec:objectives}{{1.3}{7}{Objectives}{section.1.3}{}}
@@ -26,7 +26,7 @@
 \newlabel{sec:contributions@cref}{{[section][4][1]1.4}{[1][7][]7}{}{}{}}
 \citation{redmon2016yolo}
 \citation{yolov8}
-\citation{yolov11}
+\citation{yolo11}
 \citation{yolo12}
 \citation{yolo26}
 \@writefile{toc}{\contentsline {chapter}{\numberline {2}Background}{8}{chapter.2}\protected@file@percent }
@@ -37,9 +37,9 @@
 \@writefile{toc}{\contentsline {section}{\numberline {2.1}Object Detection with YOLO}{8}{section.2.1}\protected@file@percent }
 \newlabel{sec:yolo}{{2.1}{8}{Object Detection with YOLO}{section.2.1}{}}
 \newlabel{sec:yolo@cref}{{[section][1][2]2.1}{[1][8][]8}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.1}YOLOv11}{8}{subsection.2.1.1}\protected@file@percent }
-\newlabel{subsec:yolov11}{{2.1.1}{8}{YOLOv11}{subsection.2.1.1}{}}
-\newlabel{subsec:yolov11@cref}{{[subsection][1][2,1]2.1.1}{[1][8][]8}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.1}YOLO11}{8}{subsection.2.1.1}\protected@file@percent }
+\newlabel{subsec:yolo11}{{2.1.1}{8}{YOLO11}{subsection.2.1.1}{}}
+\newlabel{subsec:yolo11@cref}{{[subsection][1][2,1]2.1.1}{[1][8][]8}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1.2}YOLO12}{8}{subsection.2.1.2}\protected@file@percent }
 \newlabel{subsec:yolo12}{{2.1.2}{8}{YOLO12}{subsection.2.1.2}{}}
 \newlabel{subsec:yolo12@cref}{{[subsection][2][2,1]2.1.2}{[1][8][]8}{}{}{}}
@@ -68,11 +68,12 @@
 \@writefile{toc}{\contentsline {section}{\numberline {2.5}Related Work}{10}{section.2.5}\protected@file@percent }
 \newlabel{sec:related}{{2.5}{10}{Related Work}{section.2.5}{}}
 \newlabel{sec:related@cref}{{[section][5][2]2.5}{[1][10][]10}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces The rear of the racecar inside the UBM Workshop while removing the 12v battery which powers the computers.}}{10}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:racecar}{{2.1}{10}{The rear of the racecar inside the UBM Workshop while removing the 12v battery which powers the computers}{figure.caption.6}{}}
+\newlabel{fig:racecar@cref}{{[figure][1][2]2.1}{[1][10][]10}{}{}{}}
+\citation{cridlig2026code}
 \citation{wandb}
 \citation{fusa2025}
-\citation{fsoco12}
-\citation{cone_detector}
-\citation{fsoco12,fsoco}
 \@writefile{toc}{\contentsline {chapter}{\numberline {3}Methods}{11}{chapter.3}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
@@ -81,61 +82,65 @@
 \@writefile{toc}{\contentsline {section}{\numberline {3.1}Experimental Setup}{11}{section.3.1}\protected@file@percent }
 \newlabel{sec:setup}{{3.1}{11}{Experimental Setup}{section.3.1}{}}
 \newlabel{sec:setup@cref}{{[section][1][3]3.1}{[1][11][]11}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3.1}{\ignorespaces Hardware used for training and deployment.}}{11}{table.caption.6}\protected@file@percent }
-\newlabel{tab:hardware}{{3.1}{11}{Hardware used for training and deployment}{table.caption.6}{}}
-\newlabel{tab:hardware@cref}{{[table][1][3]3.1}{[1][11][]11}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3.2}Datasets}{11}{section.3.2}\protected@file@percent }
-\newlabel{sec:datasets}{{3.2}{11}{Datasets}{section.3.2}{}}
-\newlabel{sec:datasets@cref}{{[section][2][3]3.2}{[1][11][]11}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.1}{\ignorespaces The Autonomous System Unit (white box) benchmarking YOLO models.}}{11}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:asu}{{3.1}{11}{The Autonomous System Unit (white box) benchmarking YOLO models}{figure.caption.7}{}}
+\newlabel{fig:asu@cref}{{[figure][1][3]3.1}{[1][11][]11}{}{}{}}
+\citation{fsoco12,fsoco}
 \citation{cone_detector}
-\@writefile{lot}{\contentsline {table}{\numberline {3.2}{\ignorespaces Datasets used in this project.}}{12}{table.caption.7}\protected@file@percent }
-\newlabel{tab:datasets}{{3.2}{12}{Datasets used in this project}{table.caption.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3.1}{\ignorespaces Hardware used for training and deployment.}}{12}{table.caption.8}\protected@file@percent }
+\newlabel{tab:hardware}{{3.1}{12}{Hardware used for training and deployment}{table.caption.8}{}}
+\newlabel{tab:hardware@cref}{{[table][1][3]3.1}{[1][11][]12}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}Datasets}{12}{section.3.2}\protected@file@percent }
+\newlabel{sec:datasets}{{3.2}{12}{Datasets}{section.3.2}{}}
+\newlabel{sec:datasets@cref}{{[section][2][3]3.2}{[1][11][]12}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3.2}{\ignorespaces Datasets used in this project.}}{12}{table.caption.9}\protected@file@percent }
+\newlabel{tab:datasets}{{3.2}{12}{Datasets used in this project}{table.caption.9}{}}
 \newlabel{tab:datasets@cref}{{[table][2][3]3.2}{[1][11][]12}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}FSOCO-12}{12}{subsection.3.2.1}\protected@file@percent }
 \newlabel{subsec:fsoco}{{3.2.1}{12}{FSOCO-12}{subsection.3.2.1}{}}
-\newlabel{subsec:fsoco@cref}{{[subsection][1][3,2]3.2.1}{[1][11][]12}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.1}{\ignorespaces Class distribution in the FSOCO-12 dataset.}}{12}{figure.caption.8}\protected@file@percent }
-\newlabel{fig:fsoco_labels}{{3.1}{12}{Class distribution in the FSOCO-12 dataset}{figure.caption.8}{}}
-\newlabel{fig:fsoco_labels@cref}{{[figure][1][3]3.1}{[1][12][]12}{}{}{}}
+\newlabel{subsec:fsoco@cref}{{[subsection][1][3,2]3.2.1}{[1][12][]12}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2.2}cone-detector}{12}{subsection.3.2.2}\protected@file@percent }
 \newlabel{subsec:cone_detector}{{3.2.2}{12}{cone-detector}{subsection.3.2.2}{}}
 \newlabel{subsec:cone_detector@cref}{{[subsection][2][3,2]3.2.2}{[1][12][]12}{}{}{}}
 \citation{fusa2025}
-\citation{wandb,bayesian_optimization}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.2}{\ignorespaces Class distribution in the FSOCO-12 dataset.}}{13}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:fsoco_labels}{{3.2}{13}{Class distribution in the FSOCO-12 dataset}{figure.caption.10}{}}
+\newlabel{fig:fsoco_labels@cref}{{[figure][2][3]3.2}{[1][12][]13}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2.3}fsoco-ubm: Real-World Test Set}{13}{subsection.3.2.3}\protected@file@percent }
 \newlabel{subsec:fsoco_ubm}{{3.2.3}{13}{fsoco-ubm: Real-World Test Set}{subsection.3.2.3}{}}
 \newlabel{subsec:fsoco_ubm@cref}{{[subsection][3][3,2]3.2.3}{[1][12][]13}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3.3}Baseline Reproduction}{13}{section.3.3}\protected@file@percent }
 \newlabel{sec:baseline}{{3.3}{13}{Baseline Reproduction}{section.3.3}{}}
 \newlabel{sec:baseline@cref}{{[section][3][3]3.3}{[1][13][]13}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3.4}Hyperparameter Sweep}{13}{section.3.4}\protected@file@percent }
-\newlabel{sec:sweep}{{3.4}{13}{Hyperparameter Sweep}{section.3.4}{}}
-\newlabel{sec:sweep@cref}{{[section][4][3]3.4}{[1][13][]13}{}{}{}}
+\citation{wandb,bayesian_optimization}
 \citation{yolo12}
 \citation{yolo26}
-\citation{cone_detector}
-\@writefile{lot}{\contentsline {table}{\numberline {3.3}{\ignorespaces Hyperparameter sweep summary (W\&B Bayesian optimization).}}{14}{table.caption.9}\protected@file@percent }
-\newlabel{tab:sweep}{{3.3}{14}{Hyperparameter sweep summary (W\&B Bayesian optimization)}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.4}Hyperparameter Sweep}{14}{section.3.4}\protected@file@percent }
+\newlabel{sec:sweep}{{3.4}{14}{Hyperparameter Sweep}{section.3.4}{}}
+\newlabel{sec:sweep@cref}{{[section][4][3]3.4}{[1][14][]14}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3.3}{\ignorespaces Hyperparameter sweep summary (W\&B Bayesian optimization).}}{14}{table.caption.11}\protected@file@percent }
+\newlabel{tab:sweep}{{3.3}{14}{Hyperparameter sweep summary (W\&B Bayesian optimization)}{table.caption.11}{}}
 \newlabel{tab:sweep@cref}{{[table][3][3]3.3}{[1][14][]14}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3.5}Architecture Evaluation}{14}{section.3.5}\protected@file@percent }
 \newlabel{sec:architecture}{{3.5}{14}{Architecture Evaluation}{section.3.5}{}}
 \newlabel{sec:architecture@cref}{{[section][5][3]3.5}{[1][14][]14}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3.4}{\ignorespaces Architecture specifications for the three evaluated models.}}{14}{table.caption.10}\protected@file@percent }
-\newlabel{tab:architectures}{{3.4}{14}{Architecture specifications for the three evaluated models}{table.caption.10}{}}
-\newlabel{tab:architectures@cref}{{[table][4][3]3.4}{[1][14][]14}{}{}{}}
+\citation{cone_detector}
 \citation{catastrophic_forgetting}
 \citation{adamw}
 \citation{onnx}
 \citation{tensorrt}
+\@writefile{lot}{\contentsline {table}{\numberline {3.4}{\ignorespaces Architecture specifications for the three evaluated models.}}{15}{table.caption.12}\protected@file@percent }
+\newlabel{tab:architectures}{{3.4}{15}{Architecture specifications for the three evaluated models}{table.caption.12}{}}
+\newlabel{tab:architectures@cref}{{[table][4][3]3.4}{[1][14][]15}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3.6}Two-Stage Training Strategy}{15}{section.3.6}\protected@file@percent }
 \newlabel{sec:two_stage}{{3.6}{15}{Two-Stage Training Strategy}{section.3.6}{}}
-\newlabel{sec:two_stage@cref}{{[section][6][3]3.6}{[1][14][]15}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3.7}Deployment Pipeline}{15}{section.3.7}\protected@file@percent }
-\newlabel{sec:deployment}{{3.7}{15}{Deployment Pipeline}{section.3.7}{}}
-\newlabel{sec:deployment@cref}{{[section][7][3]3.7}{[1][15][]15}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.2}{\ignorespaces 3D visualization of detected cones from the stereo pipeline.}}{16}{figure.caption.11}\protected@file@percent }
-\newlabel{fig:3d_view}{{3.2}{16}{3D visualization of detected cones from the stereo pipeline}{figure.caption.11}{}}
-\newlabel{fig:3d_view@cref}{{[figure][2][3]3.2}{[1][16][]16}{}{}{}}
+\newlabel{sec:two_stage@cref}{{[section][6][3]3.6}{[1][15][]15}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.7}Deployment Pipeline}{16}{section.3.7}\protected@file@percent }
+\newlabel{sec:deployment}{{3.7}{16}{Deployment Pipeline}{section.3.7}{}}
+\newlabel{sec:deployment@cref}{{[section][7][3]3.7}{[1][15][]16}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.3}{\ignorespaces 3D visualization of detected cones from the stereo pipeline.}}{16}{figure.caption.13}\protected@file@percent }
+\newlabel{fig:3d_view}{{3.3}{16}{3D visualization of detected cones from the stereo pipeline}{figure.caption.13}{}}
+\newlabel{fig:3d_view@cref}{{[figure][3][3]3.3}{[1][16][]16}{}{}{}}
 \citation{coco}
 \@writefile{toc}{\contentsline {chapter}{\numberline {4}Results}{17}{chapter.4}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
@@ -145,33 +150,33 @@
 \@writefile{toc}{\contentsline {section}{\numberline {4.1}FSOCO-12 Benchmark Results}{17}{section.4.1}\protected@file@percent }
 \newlabel{sec:fsoco_results}{{4.1}{17}{FSOCO-12 Benchmark Results}{section.4.1}{}}
 \newlabel{sec:fsoco_results@cref}{{[section][1][4]4.1}{[1][17][]17}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4.1}{\ignorespaces Overall performance on the FSOCO-12 test set (689 images, 12{,}054 instances).}}{17}{table.caption.12}\protected@file@percent }
-\newlabel{tab:fsoco_overall}{{4.1}{17}{Overall performance on the FSOCO-12 test set (689 images, 12{,}054 instances)}{table.caption.12}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.1}{\ignorespaces Overall performance on the FSOCO-12 test set (689 images, 12{,}054 instances).}}{17}{table.caption.14}\protected@file@percent }
+\newlabel{tab:fsoco_overall}{{4.1}{17}{Overall performance on the FSOCO-12 test set (689 images, 12{,}054 instances)}{table.caption.14}{}}
 \newlabel{tab:fsoco_overall@cref}{{[table][1][4]4.1}{[1][17][]17}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4.2}Per-Class Analysis}{17}{section.4.2}\protected@file@percent }
 \newlabel{sec:perclass}{{4.2}{17}{Per-Class Analysis}{section.4.2}{}}
 \newlabel{sec:perclass@cref}{{[section][2][4]4.2}{[1][17][]17}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4.2}{\ignorespaces Per-class performance of YOLO26n (single-stage) on FSOCO-12 test set.}}{18}{table.caption.13}\protected@file@percent }
-\newlabel{tab:yolo26_perclass}{{4.2}{18}{Per-class performance of YOLO26n (single-stage) on FSOCO-12 test set}{table.caption.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.1}{\ignorespaces YOLO26n (two-stage) detections on a fsoco-ubm image. Distant cones spanning only tens of pixels are detected, though not all.}}{18}{figure.caption.15}\protected@file@percent }
+\newlabel{fig:gt_detections}{{4.1}{18}{YOLO26n (two-stage) detections on a fsoco-ubm image. Distant cones spanning only tens of pixels are detected, though not all}{figure.caption.15}{}}
+\newlabel{fig:gt_detections@cref}{{[figure][1][4]4.1}{[1][18][]18}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.2}{\ignorespaces Per-class performance of YOLO26n (single-stage) on FSOCO-12 test set.}}{18}{table.caption.16}\protected@file@percent }
+\newlabel{tab:yolo26_perclass}{{4.2}{18}{Per-class performance of YOLO26n (single-stage) on FSOCO-12 test set}{table.caption.16}{}}
 \newlabel{tab:yolo26_perclass@cref}{{[table][2][4]4.2}{[1][18][]18}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4.3}Two-Stage vs.\ Single-Stage Training}{18}{section.4.3}\protected@file@percent }
 \newlabel{sec:two_stage_results}{{4.3}{18}{Two-Stage vs.\ Single-Stage Training}{section.4.3}{}}
 \newlabel{sec:two_stage_results@cref}{{[section][3][4]4.3}{[1][18][]18}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4.3}{\ignorespaces Two-stage vs.\ single-stage YOLO26n training comparison.}}{18}{table.caption.14}\protected@file@percent }
-\newlabel{tab:two_stage}{{4.3}{18}{Two-stage vs.\ single-stage YOLO26n training comparison}{table.caption.14}{}}
-\newlabel{tab:two_stage@cref}{{[table][3][4]4.3}{[1][18][]18}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.4}Real-World Validation (fsoco-ubm)}{19}{section.4.4}\protected@file@percent }
-\newlabel{sec:ubm_results}{{4.4}{19}{Real-World Validation (fsoco-ubm)}{section.4.4}{}}
-\newlabel{sec:ubm_results@cref}{{[section][4][4]4.4}{[1][18][]19}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4.4}{\ignorespaces Real-world performance on fsoco-ubm test set (96 images, 1{,}426 instances).}}{19}{table.caption.15}\protected@file@percent }
-\newlabel{tab:ubm_results}{{4.4}{19}{Real-world performance on fsoco-ubm test set (96 images, 1{,}426 instances)}{table.caption.15}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.4}Real-World Validation (fsoco-ubm)}{18}{section.4.4}\protected@file@percent }
+\newlabel{sec:ubm_results}{{4.4}{18}{Real-World Validation (fsoco-ubm)}{section.4.4}{}}
+\newlabel{sec:ubm_results@cref}{{[section][4][4]4.4}{[1][18][]18}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.3}{\ignorespaces Two-stage vs.\ single-stage YOLO26n training comparison.}}{19}{table.caption.17}\protected@file@percent }
+\newlabel{tab:two_stage}{{4.3}{19}{Two-stage vs.\ single-stage YOLO26n training comparison}{table.caption.17}{}}
+\newlabel{tab:two_stage@cref}{{[table][3][4]4.3}{[1][18][]19}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.4}{\ignorespaces Real-world performance on fsoco-ubm test set (96 images, 1{,}426 instances).}}{19}{table.caption.18}\protected@file@percent }
+\newlabel{tab:ubm_results}{{4.4}{19}{Real-world performance on fsoco-ubm test set (96 images, 1{,}426 instances)}{table.caption.18}{}}
 \newlabel{tab:ubm_results@cref}{{[table][4][4]4.4}{[1][19][]19}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4.5}Deployment Performance}{19}{section.4.5}\protected@file@percent }
 \newlabel{sec:deployment_results}{{4.5}{19}{Deployment Performance}{section.4.5}{}}
 \newlabel{sec:deployment_results@cref}{{[section][5][4]4.5}{[1][19][]19}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4.5}{\ignorespaces Inference latency breakdown on RTX 4060 (TensorRT FP16).}}{19}{table.caption.16}\protected@file@percent }
-\newlabel{tab:latency}{{4.5}{19}{Inference latency breakdown on RTX 4060 (TensorRT FP16)}{table.caption.16}{}}
-\newlabel{tab:latency@cref}{{[table][5][4]4.5}{[1][19][]19}{}{}{}}
 \citation{fusa2025}
 \@writefile{toc}{\contentsline {chapter}{\numberline {5}Conclusion}{20}{chapter.5}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
@@ -217,30 +222,31 @@
 \citation{*}
 \bibstyle{plainnat}
 \bibdata{bibliography}
-\@writefile{lot}{\contentsline {table}{\numberline {A.1}{\ignorespaces Two-stage training configuration.}}{24}{table.caption.17}\protected@file@percent }
-\newlabel{tab:two_stage_config}{{A.1}{24}{Two-stage training configuration}{table.caption.17}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {A.1}{\ignorespaces Two-stage training configuration.}}{24}{table.caption.19}\protected@file@percent }
+\newlabel{tab:two_stage_config}{{A.1}{24}{Two-stage training configuration}{table.caption.19}{}}
 \newlabel{tab:two_stage_config@cref}{{[table][1][1]A.1}{[1][23][]24}{}{}{}}
 \bibcite{mosaic_augmentation}{{1}{2020}{{Bochkovskiy et~al.}}{{Bochkovskiy, Wang, and Liao}}}
-\bibcite{map_metric}{{2}{2010}{{Everingham et~al.}}{{Everingham, Van~Gool, Williams, Winn, and Zisserman}}}
-\bibcite{fsoco12}{{3}{2024}{{FMDV}}{{}}}
-\bibcite{fsg}{{4}{2024}{{Formula Student Germany}}{{}}}
-\bibcite{catastrophic_forgetting}{{5}{1999}{{French}}{{}}}
-\bibcite{cone_detector}{{6}{2024}{{FSB Driverless}}{{}}}
-\bibcite{fsoco}{{7}{2020}{{FSOCO Contributors}}{{}}}
-\bibcite{fusa2025}{{8}{2025}{{Fusa}}{{}}}
-\bibcite{yolov8}{{9}{2023}{{Jocher et~al.}}{{Jocher, Chaurasia, and Qiu}}}
-\bibcite{coco}{{10}{2014}{{Lin et~al.}}{{Lin, Maire, Belongie, Hays, Perona, Ramanan, Doll{\'a}r, and Zitnick}}}
-\bibcite{adamw}{{11}{2019}{{Loshchilov and Hutter}}{{}}}
-\bibcite{tensorrt}{{12}{2024}{{NVIDIA Corporation}}{{}}}
-\bibcite{onnx}{{13}{2019}{{ONNX Community}}{{}}}
-\bibcite{redmon2016yolo}{{14}{2016}{{Redmon et~al.}}{{Redmon, Divvala, Girshick, and Farhadi}}}
-\bibcite{roboflow}{{15}{2024}{{Roboflow, Inc.}}{{}}}
-\bibcite{fsae_rules}{{16}{2025}{{SAE International}}{{}}}
-\bibcite{bayesian_optimization}{{17}{2012}{{Snoek et~al.}}{{Snoek, Larochelle, and Adams}}}
-\bibcite{zed2i}{{18}{2021}{{Stereolabs}}{{}}}
-\bibcite{yolo12}{{19}{2025}{{Tian et~al.}}{{Tian, Ye, and Doermann}}}
-\bibcite{yolov11}{{20}{2024}{{Ultralytics}}{{}}}
-\bibcite{yolo26}{{21}{2025}{{Ultralytics}}{{}}}
-\bibcite{wandb}{{22}{2024}{{Weights \& Biases, Inc.}}{{}}}
-\bibcite{mixup}{{23}{2018}{{Zhang et~al.}}{{Zhang, Cisse, Dauphin, and Lopez-Paz}}}
+\bibcite{cridlig2026code}{{2}{2026}{{Cridlig}}{{}}}
+\bibcite{map_metric}{{3}{2010}{{Everingham et~al.}}{{Everingham, Van~Gool, Williams, Winn, and Zisserman}}}
+\bibcite{fsoco12}{{4}{2024}{{FMDV}}{{}}}
+\bibcite{fsg}{{5}{2024}{{Formula Student Germany}}{{}}}
+\bibcite{catastrophic_forgetting}{{6}{1999}{{French}}{{}}}
+\bibcite{cone_detector}{{7}{2024}{{FSB Driverless}}{{}}}
+\bibcite{fsoco}{{8}{2020}{{FSOCO Contributors}}{{}}}
+\bibcite{fusa2025}{{9}{2025}{{Fusa}}{{}}}
+\bibcite{yolov8}{{10}{2023}{{Jocher et~al.}}{{Jocher, Chaurasia, and Qiu}}}
+\bibcite{coco}{{11}{2014}{{Lin et~al.}}{{Lin, Maire, Belongie, Hays, Perona, Ramanan, Doll{\'a}r, and Zitnick}}}
+\bibcite{adamw}{{12}{2019}{{Loshchilov and Hutter}}{{}}}
+\bibcite{tensorrt}{{13}{2024}{{NVIDIA Corporation}}{{}}}
+\bibcite{onnx}{{14}{2019}{{ONNX Community}}{{}}}
+\bibcite{redmon2016yolo}{{15}{2016}{{Redmon et~al.}}{{Redmon, Divvala, Girshick, and Farhadi}}}
+\bibcite{roboflow}{{16}{2024}{{Roboflow, Inc.}}{{}}}
+\bibcite{fsae_rules}{{17}{2025}{{SAE International}}{{}}}
+\bibcite{bayesian_optimization}{{18}{2012}{{Snoek et~al.}}{{Snoek, Larochelle, and Adams}}}
+\bibcite{zed2i}{{19}{2021}{{Stereolabs}}{{}}}
+\bibcite{yolo12}{{20}{2025}{{Tian et~al.}}{{Tian, Ye, and Doermann}}}
+\bibcite{yolo11}{{21}{2024}{{Ultralytics}}{{}}}
+\bibcite{yolo26}{{22}{2025}{{Ultralytics}}{{}}}
+\bibcite{wandb}{{23}{2024}{{Weights \& Biases, Inc.}}{{}}}
+\bibcite{mixup}{{24}{2018}{{Zhang et~al.}}{{Zhang, Cisse, Dauphin, and Lopez-Paz}}}
 \gdef \@abspage@last{27}

@@ -1,9 +1,12 @@
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Example false positive: a person misclassified as a yellow cone by the baseline YOLOv11n detector.}}{7}{figure.caption.5}%
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Example false positive: a person misclassified as a yellow cone by the baseline YOLO11n detector.}}{7}{figure.caption.5}%
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces The rear of the racecar inside the UBM Workshop while removing the 12v battery which powers the computers.}}{10}{figure.caption.6}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Class distribution in the FSOCO-12 dataset.}}{12}{figure.caption.8}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces 3D visualization of detected cones from the stereo pipeline.}}{16}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces The Autonomous System Unit (white box) benchmarking YOLO models.}}{11}{figure.caption.7}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Class distribution in the FSOCO-12 dataset.}}{13}{figure.caption.10}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces 3D visualization of detected cones from the stereo pipeline.}}{16}{figure.caption.13}%
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces YOLO26n (two-stage) detections on a fsoco-ubm image. Distant cones spanning only tens of pixels are detected, though not all.}}{18}{figure.caption.15}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
