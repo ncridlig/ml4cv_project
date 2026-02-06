@@ -10,6 +10,8 @@
 \contentsline {table}{\numberline {4.2}{\ignorespaces Per-class performance of YOLO26n (single-stage) on FSOCO-12 test set.}}{18}{table.caption.16}%
 \contentsline {table}{\numberline {4.3}{\ignorespaces Two-stage vs.\ single-stage YOLO26n training comparison.}}{19}{table.caption.17}%
 \contentsline {table}{\numberline {4.4}{\ignorespaces Real-world performance on fsoco-ubm test set (96 images, 1{,}426 instances).}}{19}{table.caption.18}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Output tensor formats for legacy and end-to-end YOLO architectures.}}{20}{table.caption.19}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Per-stage timing comparison on RTX 4060 (mean over $>$10{,}000 frames).}}{21}{table.caption.20}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {A.1}{\ignorespaces Two-stage training configuration.}}{24}{table.caption.19}%
+\contentsline {table}{\numberline {A.1}{\ignorespaces Two-stage training configuration.}}{26}{table.caption.22}%

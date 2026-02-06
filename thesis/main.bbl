@@ -1,4 +1,4 @@
-\begin{thebibliography}{24}
+\begin{thebibliography}{26}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -103,6 +103,11 @@ Joseph Redmon, Santosh Divvala, Ross Girshick, and Ali Farhadi.
 \newblock URL \url{https://www.fsaeonline.com/CompResources/2025/8f030a58-d9e4-49b8-bc83-6ca16c7ce715/FSAE-Driverless-Supplement-V11.pdf}.
 \newblock Section: Dynamic Event Markings.
 
+\bibitem[Sapkota et~al.(2025)]{yolo26}
+Ranjan Sapkota et~al.
+\newblock {YOLO26}: Key architectural enhancements and performance benchmarking for real-time object detection.
+\newblock \emph{arXiv preprint arXiv:2509.25164}, 2025.
+
 \bibitem[Snoek et~al.(2012)Snoek, Larochelle, and Adams]{bayesian_optimization}
 Jasper Snoek, Hugo Larochelle, and Ryan~P. Adams.
 \newblock Practical {Bayesian} optimization of machine learning algorithms.
@@ -125,11 +130,16 @@ Yunjie Tian, Qiang Ye, and David Doermann.
 \newblock URL \url{https://docs.ultralytics.com/models/yolo11/}.
 \newblock Accessed January 2026.
 
-\bibitem[{Ultralytics}(2025)]{yolo26}
+\bibitem[{Ultralytics}(2025)]{yolo26_docs}
 {Ultralytics}.
-\newblock {YOLOv26}: Advancing real-time object detection, 2025.
+\newblock {Ultralytics YOLO26} documentation, 2025.
 \newblock URL \url{https://docs.ultralytics.com/models/yolo26/}.
 \newblock Accessed January 2026.
+
+\bibitem[Wang et~al.(2024)Wang, Chen, Liu, Chen, Lin, Han, and Ding]{yolov10}
+Ao~Wang, Hui Chen, Lihao Liu, Kai Chen, Zijia Lin, Jungong Han, and Guiguang Ding.
+\newblock {YOLOv10}: Real-time end-to-end object detection.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, volume~37, 2024.
 
 \bibitem[{Weights \& Biases, Inc.}(2024)]{wandb}
 {Weights \& Biases, Inc.}

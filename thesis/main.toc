@@ -30,13 +30,14 @@
 \contentsline {section}{\numberline {4.3}Two-Stage vs.\ Single-Stage Training}{18}{section.4.3}%
 \contentsline {section}{\numberline {4.4}Real-World Validation (fsoco-ubm)}{18}{section.4.4}%
 \contentsline {section}{\numberline {4.5}Deployment Performance}{19}{section.4.5}%
-\contentsline {chapter}{\numberline {5}Conclusion}{20}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Summary of Contributions}{20}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Lessons Learned}{20}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Limitations}{21}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Future Work}{21}{section.5.4}%
-\contentsline {chapter}{\numberline {A}Technical Details}{23}{appendix.A}%
-\contentsline {section}{\numberline {A.1}Hyperparameter Sweep Configuration}{23}{section.A.1}%
-\contentsline {section}{\numberline {A.2}Two-Stage Training Hyperparameters}{24}{section.A.2}%
-\contentsline {section}{\numberline {A.3}The \texttt {optimizer='auto'} Bug}{24}{section.A.3}%
-\contentsline {section}{\numberline {A.4}fsoco-ubm Dataset Creation Pipeline}{25}{section.A.4}%
+\contentsline {section}{\numberline {4.6}Integration Challenges}{20}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Conclusion}{22}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Summary of Contributions}{22}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Lessons Learned}{22}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Limitations}{23}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Future Work}{23}{section.5.4}%
+\contentsline {chapter}{\numberline {A}Technical Details}{25}{appendix.A}%
+\contentsline {section}{\numberline {A.1}Hyperparameter Sweep Configuration}{25}{section.A.1}%
+\contentsline {section}{\numberline {A.2}Two-Stage Training Hyperparameters}{26}{section.A.2}%
+\contentsline {section}{\numberline {A.3}The \texttt {optimizer='auto'} Bug}{26}{section.A.3}%
+\contentsline {section}{\numberline {A.4}fsoco-ubm Dataset Creation Pipeline}{27}{section.A.4}%

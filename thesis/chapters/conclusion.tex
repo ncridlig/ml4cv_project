@@ -7,7 +7,7 @@
 
 % Summarize key results
 
-Of the three architectures evaluated, YOLO26n achieved the best results: \mAPfifty{}=0.763 on FSOCO-12 (+14.6\% over the previous production model) and 2.63~ms inference on the onboard RTX~4060, leaving a 6.3$\times$ margin for 60~fps operation. A two-stage training variant traded marginal benchmark precision for better recall and real-world generalization. Hyperparameter tuning proved ineffective. Our real-world test set, fsoco-ubm, revealed a 22--27\% accuracy drop from the internet benchmark across all models. This gap would have gone unnoticed without car-specific validation data.
+Of the three architectures evaluated, YOLO26n achieved the best results: \mAPfifty{}=0.763 on FSOCO-12 (+14.6\% over the previous production model) and 2.63~ms model inference on the onboard RTX~4060. The full perception pipeline---including stereo matching, feature matching, and triangulation---runs at 15.61~ms, just within the 16.7~ms budget for 60~fps. A two-stage training variant traded marginal benchmark precision for better recall and real-world generalization. Hyperparameter tuning proved ineffective. Our real-world test set, fsoco-ubm, revealed a 22--27\% accuracy drop from the internet benchmark across all models. This gap would have gone unnoticed without car-specific validation data.
 
 \section{Lessons Learned}
 \label{sec:lessons}
@@ -38,7 +38,7 @@ Several limitations should be noted. We could not reproduce the \mAPfifty{}=0.82
 We recommend the following directions for continued development:
 
 \begin{itemize}
-    \item \textbf{Evaluate larger YOLO26 variants.} The 6.3$\times$ latency margin leaves room for YOLO26s, which may improve detection of distant and ambiguous cones.
+    \item \textbf{Evaluate larger YOLO26 variants.} Model inference accounts for only 5.29~ms of the 15.61~ms pipeline, so a moderately larger model such as YOLO26s could improve detection of distant and ambiguous cones without exceeding the real-time budget, provided the downstream stages are also optimized.
     \item \textbf{Expand fsoco-ubm.} Add images from different tracks, weather conditions, and times of day. The current 96 images from a single session are a starting point, not a representative benchmark. With 1{,}000+ annotated images, fsoco-ubm could also serve as a fine-tuning set, closing the benchmark-to-deployment gap directly rather than just measuring it.
     \item \textbf{Target the unknown cone class.} Data augmentation strategies such as color jittering and occlusion simulation may help the model learn to flag uncertain detections. Alternatively, merging unknown cones into the nearest color class and combining the two orange cone classes during training could improve overall recall at the cost of classification granularity.
     \item \textbf{Auto-exposure compensation.} The ZED~2i camera's auto-exposure underexposes cones when the sky dominates the frame. A preprocessing step that adjusts exposure based on the lower half of the image could reduce this failure mode.

@@ -38,7 +38,7 @@ UBM Production      & unknown        & 300     & 0.666          & 0.461         
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.75\textwidth]{comparison_lidar1_left_gt_detections.png}
+\includegraphics[width=0.75\textwidth]{comparison_lidar1_left_gt_detections.jpg}
 \caption{YOLO26n (two-stage) detections on a fsoco-ubm image. Distant cones spanning only tens of pixels are detected, though not all.}
 \label{fig:gt_detections}
 \end{figure}
@@ -63,11 +63,7 @@ Unknown Cone      & 68   & 679    & 0.635 & 0.297 & 0.364          & 0.178 \\ \b
 \section{Two-Stage vs.\ Single-Stage Training}
 \label{sec:two_stage_results}
 
-% TODO: Discuss two-stage results (1-2 paragraphs)
-% - Near-identical mAP50 (0.761 vs 0.763)
-% - Two-stage wins on mAP50-95 (+0.6%), recall (+1.4pp), and real-world precision (+3.4pp)
-% - Two-stage trades marginal FSOCO-12 precision for better generalization
-% - Deployed model: two-stage (better recall is safety-critical)
+% Discuss two-stage results
 
 \Cref{tab:two_stage} compares the two training strategies head-to-head. On the FSOCO-12 benchmark the difference is within noise: \mAPfifty{} differs by just 0.2\%, and neither variant is consistently better across all metrics. The two-stage model wins on recall (+1.4 percentage points) and \mAPfiftyfive{} (+0.4 percentage points), at the cost of lower precision ($-1.7$ percentage points). On the real-world fsoco-ubm set, the two models tie at \mAPfifty{}=0.565, but two-stage achieves 3.4 percentage points higher precision, indicating fewer false positives under deployment conditions. We deployed the two-stage model because missing a cone is more dangerous than a false detection in autonomous racing. However, we do not recommend training two stage models due to their quadrupled computational cost; better to train other architectures and improve the datasets.
 
@@ -118,13 +114,61 @@ UBM Production      & 0.517          & 0.635          & 0.393          & $-22.3\
 \section{Deployment Performance}
 \label{sec:deployment_results}
 
-% TODO: Discuss deployment results (1-2 paragraphs)
-% - TensorRT FP16 on RTX 4060 (onboard race car)
-% - YOLO26n: 2.63 ms total latency (GPU compute only 1.02 ms)
-% - 2.58x faster than UBM baseline (6.78 ms)
-% - 6.3x real-time margin for 60 fps (2.63 ms << 16.7 ms budget)
-% - INT8 quantization not needed given massive real-time margin
-% - FP16 engine: 9.35 MB (easily fits in GPU memory)
+% Discuss deployment results
 
-On the RTX 4060 onboard the race car, the YOLO26n TensorRT FP16 engine averages 2.63~ms per image (1.58~ms host-to-device transfer, 1.02~ms GPU compute, 0.03~ms device-to-host), leaving a 6.3$\times$ margin over the 16.7~ms budget for 60~fps operation. The production YOLO11n engine is comparable at 2.70~ms; both models are transfer-bound rather than compute-bound. We did not pursue INT8 quantization: the 1--2\% \mAPfifty{} penalty is not justified when the model is already well within the real-time envelope.
+On the RTX 4060 onboard the race car, the YOLO26n TensorRT FP16 engine averages 2.63~ms per image in isolated benchmarks (\texttt{trtexec}: 1.58~ms host-to-device, 1.02~ms GPU compute, 0.03~ms device-to-host). The production YOLO11n engine is comparable at 2.70~ms; both models are transfer-bound rather than compute-bound at this scale. Note that model inference is only one stage of the full perception pipeline---preprocessing, stereo matching, feature matching, and triangulation add substantial overhead. As shown in \cref{sec:integration}, the complete pipeline runs at 15.61~ms for YOLO26n, just within the 16.7~ms budget for 60~fps. We did not pursue INT8 quantization: the 1--2\% \mAPfifty{} penalty is not justified when inference itself is not the bottleneck.
+
+%% ================================================================
+\section{Integration Challenges}
+\label{sec:integration}
+
+Deploying a new YOLO architecture revealed a hidden assumption in the inference pipeline: the output tensor format. When we first loaded the YOLO26n engine, the node produced zero detections with occasional flickering gray bounding boxes (class ``unknown cone''). The TensorRT engine check logs revealed the root cause---a tensor shape mismatch between what the code expected and what the model produced.
+
+\Cref{tab:tensor_formats} shows the critical difference. YOLO11 outputs a tensor of shape $(2, 9, 8400)$, where the 9 channels encode four bounding box coordinates (center $x$, center $y$, width, height) plus five class confidences, and 8400 is the total number of anchor-free predictions across three feature map scales ($80^2 + 40^2 + 20^2 = 8{,}400$ for a $640\times640$ input). These raw predictions require Non-Maximum Suppression (NMS) in postprocessing to filter overlapping detections. YOLO26, following the end-to-end paradigm introduced by YOLOv10 \citep{yolov10}, performs NMS internally via consistent dual assignments during training and outputs $(2, 300, 6)$: up to 300 pre-filtered detections per image \citep{yolo26, yolo26_docs}. Each detection contains six values: corner coordinates ($x_1, y_1, x_2, y_2$), confidence, and class ID. The old postprocessing code assumed the YOLO11 layout, reading memory at wrong strides and interpreting random floats as coordinates and class IDs, occasionally producing a garbage detection that passed validation.
+
+\begin{table}[ht]
+\centering
+\caption{Output tensor formats for legacy and end-to-end YOLO architectures.}
+\label{tab:tensor_formats}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Model} & \textbf{Output Shape} & \textbf{Format} & \textbf{Box Encoding} & \textbf{NMS} \\ \midrule
+YOLO11 & $(2, 9, 8400)$ & $[\text{batch}, 4{+}n_c, \text{anchors}]$ & $x_c, y_c, w, h$ & Software \\
+YOLO26 & $(2, 300, 6)$ & $[\text{batch}, \text{max\_det}, 6]$ & $x_1, y_1, x_2, y_2$ & Built-in \\ \bottomrule
+\end{tabular}
+\begin{flushleft}
+\small $n_c$ = number of classes (5). Anchors: $80^2{+}40^2{+}20^2 = 8{,}400$ for $640{\times}640$ input.
+\end{flushleft}
+\end{table}
+
+The fix auto-detects the model version from output dimensions at initialization: if \texttt{d[2]==6}, the model is end-to-end; if \texttt{d[1]<d[2]}, it is legacy. Each format has its own postprocessing path. The change required approximately 40 lines of new code with zero modifications to the existing YOLO11 path, which was simply wrapped in a conditional block. This design maintains backward compatibility: the same node binary can load either model type without recompilation.
+
+\Cref{tab:timing_comparison} compares per-stage timing between the two architectures on the full inference pipeline. The most striking result is postprocessing: YOLO11 spends 0.35~ms on NMS, while YOLO26 registers 0.00~ms (below measurement resolution) because NMS is eliminated entirely. The total pipeline time drops from 16.56~ms to 15.61~ms, a 5.7\% improvement. Feature matching is also 18\% faster with YOLO26, likely because the end-to-end model produces fewer false positives and thus fewer bounding boxes to match across the stereo pair.
+
+\begin{table}[ht]
+\centering
+\caption{Per-stage timing comparison on RTX 4060 (mean over $>$10{,}000 frames).}
+\label{tab:timing_comparison}
+\begin{tabular}{@{}lS[table-format=1.2]S[table-format=1.2]r@{}}
+\toprule
+\textbf{Stage} & {\textbf{YOLO11 (ms)}} & {\textbf{YOLO26 (ms)}} & \textbf{Delta} \\ \midrule
+Preprocessing      & 0.32 & 0.31 & $-3\%$ \\
+Inference          & 5.42 & 5.29 & $-2\%$ \\
+\textbf{Postprocessing} & \textbf{0.35} & \textbf{0.00} & $\mathbf{-100\%}$ \\
+BBox matching      & 2.35 & 2.40 & $+2\%$ \\
+Feature matching   & 2.88 & 2.37 & $-18\%$ \\
+Triangulation      & 0.12 & 0.11 & $-8\%$ \\
+Sending            & 0.02 & 0.02 & $0\%$ \\
+\textbf{Total}     & \textbf{16.56} & \textbf{15.61} & $\mathbf{-5.7\%}$ \\ \bottomrule
+\end{tabular}
+\end{table}
+
+Finally, we note that the auto-exposure problem identified in Fusa's thesis \citep{fusa2025} (Section~5.2.2) has been addressed by a fix already present in the codebase. The ZED~2i camera's Auto-Exposure/Auto-Gain Control (AEC/AGC) region is restricted to the bottom half of the frame (y=360 to y=710 in the 720p image), causing the camera to expose for cones on the ground rather than the bright sky. This is a naive but effective solution: since the horizon in track conditions is approximately at the vertical center, the top half (sky) may be over- or underexposed, but cone visibility is preserved. \Cref{fig:yolo26_working} shows YOLO26n correctly detecting cones after all integration issues were resolved.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{yolo26_occlusion.jpg}
+\caption{YOLO26n detecting cones in the workshop after integration fixes. The large orange cone and partially occluded yellow cone are both detected with high confidence.}
+\label{fig:yolo26_working}
+\end{figure}
 

@@ -13,7 +13,7 @@ This report addresses an element of the work undertaken by Unibo Motorsport (UBM
 For perception, the software stack relies upon a custom trained YOLO object detector to identify track cones from a stereocamera so that they may be reconstructed with a multi-stage matching algorithm. The baseline model, YOLO11, has room for improvement. It is trained on base hyperparameters and any tuning or analysis was lost. The \mAPfifty{}=0.666 and while this figure is our quantitative benchmark, qualitative issues registered by the team include exposure sensitivity and false positives.
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.65\textwidth]{false_positive_yolo.png}
+\includegraphics[width=0.65\textwidth]{false_positive_yolo.jpg}
 \caption{Example false positive: a person misclassified as a yellow cone by the baseline YOLO11n detector.}
 \label{fig:false_positive}
 \end{figure}

@@ -8,5 +8,6 @@
 \contentsline {figure}{\numberline {3.3}{\ignorespaces 3D visualization of detected cones from the stereo pipeline.}}{16}{figure.caption.13}%
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {4.1}{\ignorespaces YOLO26n (two-stage) detections on a fsoco-ubm image. Distant cones spanning only tens of pixels are detected, though not all.}}{18}{figure.caption.15}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces YOLO26n detecting cones in the workshop after integration fixes. The large orange cone and partially occluded yellow cone are both detected with high confidence.}}{21}{figure.caption.21}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
