@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1770399323.33472 "main.aux" "main.bbl" "main" 1770400306.90422 0
+["bibtex main"] 1770399323.33472 "main.aux" "main.bbl" "main" 1770466554.26528 0
   "./bibliography.bib" 1770396503.20566 7055 009871ee6dca49124fcd8a16c41d7482 ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "main.aux" 1770400306.56513 22714 e85f1253941990c719a320be0ed849b3 "pdflatex"
+  "main.aux" 1770466553.95363 22714 e85f1253941990c719a320be0ed849b3 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1770400305.02994 "/Users/nicolas/Desktop/Fall 2024/ML4CV/ml4cv_project/thesis/main.tex" "main.pdf" "main" 1770400306.90447 0
+["pdflatex"] 1770466552.54415 "/Users/nicolas/Desktop/Fall 2024/ML4CV/ml4cv_project/thesis/main.tex" "main.pdf" "main" 1770466554.26543 0
   "/Users/nicolas/Desktop/Fall 2024/ML4CV/ml4cv_project/thesis/main.tex" 1769713980.90272 674 4794c7b1b5ed645a583cc3abfbbaad81 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1254269338 2375 baa924870cfb487815765f9094cf3728 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc" 1202520719 2405 5dcf2c1b967ee25cc46c58cd52244aed ""
@@ -153,7 +153,7 @@
   "abstract.tex" 1770400304.77023 1435 68f030f0f244ee0abba914a7c656f7ff ""
   "chapters/appendixA.tex" 1769956484.36915 7785 b4f3a407963f7d07d90485f72586d127 ""
   "chapters/background.tex" 1770399740.41408 5916 42485b1c0d7e53ef6afaad1d15580795 ""
-  "chapters/conclusion.tex" 1770398864.35554 6039 e0c0c462e9d6c6c4aefc8c0d81ee6aa2 ""
+  "chapters/conclusion.tex" 1770466552.35726 6075 5cb058e15c277ef832ff59c2ba0fbd44 ""
   "chapters/introduction.tex" 1770399740.41156 3031 f0b40fb59a8beff9feee4cd16cd5dab4 ""
   "chapters/methods.tex" 1770399722.3546 13346 abd7062f27be51c9457d6ebb9fe5e513 ""
   "chapters/results.tex" 1770399722.35826 13775 bb92efc2dc9ccf1c2935eeba6168e1b6 ""
@@ -164,13 +164,13 @@
   "figures/fsoco_dataset_labels.png" 1769713645.7845 473476 3c6d8e84f6a899e5a2b2788415089b96 ""
   "figures/racecar.jpg" 1770399687.71003 1192981 49a93e00877a00c6a8c8987353c51f93 ""
   "figures/yolo26_occlusion.jpg" 1770399687.87683 73550 014bc16aba1631ce7ff73cdc7d297790 ""
-  "main.aux" 1770400306.56513 22714 e85f1253941990c719a320be0ed849b3 "pdflatex"
+  "main.aux" 1770466553.95363 22714 e85f1253941990c719a320be0ed849b3 "pdflatex"
   "main.bbl" 1770399323.4379 6920 7fe5a7623cc6ed4194725cb067ec6a9c "bibtex main"
-  "main.lof" 1770400306.56743 1346 4c669b908cbd3695679006862359ccf7 "pdflatex"
-  "main.lot" 1770400306.56746 1637 e9079000ca299fa8b3d657ac7ff64085 "pdflatex"
-  "main.out" 1770400306.56713 6757 51babbe2ffb61ea19b45752565d4479e "pdflatex"
+  "main.lof" 1770466553.95579 1346 4c669b908cbd3695679006862359ccf7 "pdflatex"
+  "main.lot" 1770466553.95582 1637 e9079000ca299fa8b3d657ac7ff64085 "pdflatex"
+  "main.out" 1770466553.95553 6757 51babbe2ffb61ea19b45752565d4479e "pdflatex"
   "main.tex" 1769713980.90272 674 4794c7b1b5ed645a583cc3abfbbaad81 ""
-  "main.toc" 1770400306.5674 3492 fdb7475c420b765d44e3a52a73d270ce "pdflatex"
+  "main.toc" 1770466553.95575 3492 fdb7475c420b765d44e3a52a73d270ce "pdflatex"
   "preamble.tex" 1769713921.74668 1640 e2c1b68fe35ad4d061b4a3ba5bc42c34 ""
   "titlepage.tex" 1769956305.22029 857 2bb2ee8414953c1eb7ff7f2455271f78 ""
   (generated)
