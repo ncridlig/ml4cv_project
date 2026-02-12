@@ -6,7 +6,7 @@
 \label{sec:setup}
 
 % Describe hardware and software setup
-All training scripts, configurations, and evaluation code are publicly available \citep{cridlig2026code}. We used a M1 MacBook Air for code development and an Ubuntu workstation with an RTX 4080 Super for training. The existing inference pipeline (\texttt{ubm-yolo-detector}) enforced the use of Ultralytics models, which we kept to slot the new model into the existing modular framework. Weights and Biases \citep{wandb} provided experiment tracking. The Autonomous System Unit (ASU) on the race car is a water-cooled desktop running ROS2 \citep{fusa2025}; for our purposes we care only about its GPU, an RTX 4060.
+All training scripts, configurations, and evaluation code are publicly available \citep{cridlig2026code}. We used a M1 MacBook Air for code development and an Ubuntu workstation with a RTX 4080 Super for training. The existing inference pipeline (\texttt{ubm-yolo-detector}) enforced the use of Ultralytics models, which we kept to slot the new model into the existing modular framework. Weights and Biases \citep{wandb} provided experiment tracking. The Autonomous System Unit (ASU) on the race car is a water-cooled desktop running ROS2 \citep{fusa2025}; for our purposes we care only about its GPU, a RTX 4060.
 
 \begin{figure}[ht]
 \centering
@@ -74,7 +74,7 @@ The cone-detector dataset \citep{cone_detector} contains 22{,}725 images with th
 % Describe the in-house UBM test set
 FSOCO-12 is an internet dataset assembled from many teams and cameras, so good performance on it does not guarantee good performance on our car. To address this, we created fsoco-ubm: a 96-image test set extracted directly from the ZED 2i stereo camera on the UBM race car. The images were recorded on November 20, 2025 at the Rioveggio test track during driving runs at 30--50~km/h. We extracted one frame every 60 frames from the stereo video (one sample every two seconds of real-world time), split the 2560$\times$720 stereo pairs into left and right images of 1280$\times$720, and annotated them using Roboflow Label Assist with manual review.
 
-The dataset contains 1{,}426 cone instances across the five classes, dominated by yellow and blue cones with very few orange instances. The real-world conditions introduce challenges absent from the internet benchmark: motion blur, variable outdoor lighting, small pixel area for distant cones, and color desaturation. We use fsoco-ubm strictly as a held-out test set and never for training.
+The dataset contains 1{,}426 cone instances across the five classes, dominated by yellow and blue cones with few orange instances. The real-world conditions introduce challenges absent from the internet benchmark: motion blur, variable outdoor lighting, small pixel area for distant cones, and color desaturation. We use fsoco-ubm strictly as a held-out test set and never for training.
 
 \section{Baseline Reproduction}
 \label{sec:baseline}
@@ -121,7 +121,7 @@ Since hyperparameter tuning proved ineffective, we evaluated whether newer archi
 \textbf{Model}  & {\textbf{Params (M)}} & {\textbf{GFLOPs}} & \textbf{Year} \\ \midrule
 YOLO11n        & 2.59                  & 6.4               & 2024          \\
 YOLO12n         & 2.56                  & 6.3               & 2025          \\
-YOLO26n         & 2.51                  & 5.8               & 2025          \\ \bottomrule
+YOLO26n         & 2.51                  & 5.8               & 2026          \\ \bottomrule
 \end{tabular}
 \end{table}
 
@@ -141,11 +141,11 @@ We redesigned Stage~2 as a two-phase process using explicit AdamW \citep{adamw}.
 % Describe ONNX and TensorRT export
 The trained PyTorch model is deployed through a three-step export pipeline. First, the \texttt{best.pt} checkpoint is exported to ONNX \citep{onnx} with a fixed batch size of 2 (two images in a stereo pair). Then, on the ASU itself, the ONNX graph is compiled into a TensorRT FP16 engine \citep{tensorrt} using \texttt{trtexec}. Building the engine on the target hardware is mandatory because TensorRT optimizes kernel selection and memory layout for the specific GPU architecture (RTX~4060).
 
-The C++ ROS2 inference node (\texttt{ros\_yolo\_detector\_node}) receives stereo image pairs from the ZED~2i camera topic and runs YOLO inference on the left and right frames in parallel using two threads. The resulting bounding box vectors are sorted by center coordinates and matched across the stereo pair using a distance and similarity criterion, followed by feature matching for robust association. Matched detections are triangulated into 3D positions in the camera coordinate frame and then transformed into the vehicle frame (FLU convention) for downstream SLAM consumption. The node publishes both an annotated image with bounding box overlays and a \texttt{DetectionInfosArray} message containing 3D coordinates and confidence scores. We lowered the detection confidence threshold from the default 0.5 to 0.35, which improved \mAPfifty{} on fsoco-ubm by 10\% by recovering additional true positives at the cost of a marginal increase in false detections. This parameter as well as the NMS threshold are modifiable without recompiling and can be tuned further on the track.
+The C++ ROS2 inference node (\texttt{ros\_yolo\_detector\_node}) receives stereo image pairs from the ZED~2i camera topic and runs YOLO inference on the left and right frames in parallel using a batch. The resulting bounding box vectors are sorted by center coordinates and matched across the stereo pair using a distance and similarity criterion, followed by feature matching for robust association. Matched detections are triangulated into 3D positions in the camera coordinate frame and then transformed into the vehicle frame (FLU convention) for downstream SLAM consumption. The node publishes both an annotated image with bounding box overlays and a \texttt{DetectionInfosArray} message containing 3D coordinates and confidence scores. We lowered the detection confidence threshold from the default 0.5 to 0.35, which improved \mAPfifty{} on fsoco-ubm by 10\% by recovering additional true positives at the cost of a marginal increase in false detections. This parameter as well as the NMS threshold are modifiable without recompiling and can be tuned further on the track.
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.75\textwidth]{Existing_3D_View.jpg}
-\caption{3D visualization of detected cones from the stereo pipeline.}
+\caption{3D visualization of detected cones from the stereo camera and lidar pipelines.}
 \label{fig:3d_view}
 \end{figure}

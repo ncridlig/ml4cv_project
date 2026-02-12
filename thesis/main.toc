@@ -28,7 +28,7 @@
 \contentsline {section}{\numberline {4.1}FSOCO-12 Benchmark Results}{17}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Per-Class Analysis}{17}{section.4.2}%
 \contentsline {section}{\numberline {4.3}Two-Stage vs.\ Single-Stage Training}{18}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Real-World Validation (fsoco-ubm)}{18}{section.4.4}%
+\contentsline {section}{\numberline {4.4}Real-World Validation (fsoco-ubm)}{19}{section.4.4}%
 \contentsline {section}{\numberline {4.5}Deployment Performance}{19}{section.4.5}%
 \contentsline {section}{\numberline {4.6}Integration Challenges}{20}{section.4.6}%
 \contentsline {chapter}{\numberline {5}Conclusion}{22}{chapter.5}%

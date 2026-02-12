@@ -291,6 +291,8 @@ model = YOLO('runs/two-stage-yolo26/stage2a_head_only_50ep/weights/best.pt')  # 
 | 2026-01-30 | 4 hrs | Edited report and wrote README.md. |
 | 2026-02-05 | 10 hrs | UBM workshop: added YOLO26 end-to-end (NMS-free) output support to ROS C++ node (`ros_yolo_detector_node.cpp`). Auto-detects model version from output tensor shape (`[batch, 300, 6]` vs `[batch, 9, 8400]`). Works with both TensorRT and OpenVINO backends, batch_size=2 stereo. Compiled on ASU and ran full stack — YOLO26n detections working in real-time. Profiling confirms postprocessing speedup from NMS elimination. Verified class label consistency (same FSOCO-12 ordering) between YOLO11 and YOLO26 models. |
 | 2026-02-06 | 4 hrs | Add yesterday's report. |
+| 2026-02-07 | 4 hrs | Polish. |
+| 2026-02-12 | 4 hrs | Preparation for presentation. |
 
 ---
 
